@@ -1,41 +1,83 @@
 #include <Arduino.h>
 #include <Adafruit_PWMServoDriver.h>
-#include <math.h>
+#include "ReceiverInput.h"
 
-Adafruit_PWMServoDriver pwm = Adafruit_PWMServoDriver(0x40); // Default i2C address
-//uint8_t servoNum = 0;                                        // Servo counter from 0-15 (16 in total), an unsigned 8-bit integer
-double frequency = 0.5; // Hz
-float time; // Stores the time in seconds since the program started
+/*
+- There are 6 channels comming into the receiver
+- Channels 0-->5 proceed. THR:0, AIL:1, ELE:2, RUD:3, GEA:4, AUX:5
+- Values will be from 500 --> 2500 uS centered on 1500 uS as the neutral position
+*/
 
-#define SERVOMIN 205;  // This is the 'minimum' pulse length count (out of 4096) ==> 45 degrees
-#define SERVOMAX 410;  // This is the 'maximum' pulse length count (out of 4096) ==> 135 degrees
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
+
+ReceiverInput ri = ReceiverInput();
+Adafruit_PWMServoDriver pwmL = Adafruit_PWMServoDriver(0x40);
+Adafruit_PWMServoDriver pwmR = Adafruit_PWMServoDriver(0x41);
 
 void setup()
 {
-  Serial.begin(9600);
-  pwm.begin();
-  pwm.setOscillatorFrequency(27E6);
-  pwm.setPWMFreq(SERVO_FREQ);
-  pwm.setPWM(15, 0, 2048);
+  pwmL.begin();
+  pwmL.setOscillatorFrequency(27E6);
+  pwmL.setPWMFreq(SERVO_FREQ);
+
+  pwmR.begin();
+  pwmR.setOscillatorFrequency(27E6);
+  pwmR.setPWMFreq(SERVO_FREQ);
 }
 
 void loop()
 {
-  time = millis() * 0.001; // Time in seconds
 
-  for(int servoNum=0;servoNum<=15;servoNum++){
-    double servMax = (1.0/20)*4096.0;
-    double servMin = (2.0/20)*4096.0;
-    double amplitude = 0.5 * (servMax - servMin);
-    double shift = 0.5 * (servMax - servMin) + SERVOMIN;
-    double phaseShift = 1 * PI * (servoNum / 15.0);
+  /* 
+  Update receiver inputs
+  */
+  ri.updateReceiverValues();
 
-    //double onTime = amplitude * sin(2*PI*frequency*time - phaseShift) + shift;
-    double onTime = (1.5/20.0) * 4096.0; // 1.0 ms is 45 degrees, 1.5 ms is 90 degrees, 2.0 ms is 135 degrees
-    pwm.setPWM(servoNum, 0, onTime); // All servos
-    //pwm.setPWM(2, 0, onTime);
+  double ailAngle = (ri.getChannel(1) - 1500.0) * (9.0/100.0);
+  double eleAngle = (ri.getChannel(2) - 1500.0) * (9.0/100.0);
+  double rudAngle = (ri.getChannel(3) - 1500.0) * (9.0/100.0);
 
-  }
+  double lowerLegRight = ((((ailAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+  double lowerLegLeft = ((((-ailAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
   
+  double midLegRight = ((((eleAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+  double midLegLeft = ((((-eleAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+
+  double upperLegRight = ((((rudAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+  double upperLegLeft = ((((rudAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+
+
+  pwmL.setPWM(13, 0, lowerLegLeft);
+  pwmL.setPWM(10, 0, lowerLegLeft);
+  pwmL.setPWM(7, 0, lowerLegLeft);
+
+  pwmR.setPWM(2, 0, lowerLegRight);
+  pwmR.setPWM(5, 0, lowerLegRight);
+  pwmR.setPWM(8, 0, lowerLegRight);
+
+  pwmL.setPWM(14, 0, midLegLeft);
+  pwmL.setPWM(11, 0, midLegLeft);
+  pwmL.setPWM(8, 0, midLegLeft);
+
+  pwmR.setPWM(1, 0, midLegRight);
+  pwmR.setPWM(4, 0, midLegRight);
+  pwmR.setPWM(7, 0, midLegRight);
+
+  pwmL.setPWM(15, 0, upperLegLeft);
+  pwmL.setPWM(12, 0, upperLegLeft);
+  pwmL.setPWM(9, 0, upperLegLeft);
+
+  pwmR.setPWM(0, 0, upperLegRight);
+  pwmR.setPWM(3, 0, upperLegRight);
+  pwmR.setPWM(6, 0, upperLegRight);
+
+
+  
+  
+// ----------------------------------------------------------------------------------------------------
+
+  // Calculate servo positions
+  // Update servo positions
+  
+
 }
