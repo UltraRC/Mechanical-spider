@@ -1,4 +1,4 @@
-# Learning git with vsCode
+# Robot Hexapod - By Reuben van Dorp
 
-- Server side edit!
-- Second commit
+Inline-Style:
+![Robot Spider](/images/spider.jpg)
