@@ -1,4 +1,4 @@
 # Robot Hexapod - By Reuben van Dorp
 
-Inline-Style:
+Inline-style:
 ![Robot Spider](/images/spider.jpg)
