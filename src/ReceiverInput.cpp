@@ -8,14 +8,18 @@ volatile int valuesFromReceiver[6];
 int lastTime = 0;
 
 /*
-- Constructor
+Constructor:
+- Initilize all input pins
+- Set default values for valuesFromReceiver[] array
+- Enable interupts for each of the RC input pins and associate each pin with a function
 */
 ReceiverInput::ReceiverInput(){
-    for(int i=7;i<=12;i++){
+    
+    for(int i=7;i<=12;i++){ // Initilize all input pins
         pinMode(i, INPUT);
     }
 
-    for(int i=0;i<=5;i++){
+    for(int i=0;i<=5;i++){ // Set the default values for the array which holds receiver values
         valuesFromReceiver[i]=1500;
     }
     enableInterrupt(RC_THR_PIN, thrInterrupt, CHANGE);
