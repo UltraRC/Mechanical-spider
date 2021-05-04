@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <Adafruit_PWMServoDriver.h>
 #include "ReceiverInput.h"
+#include "SetServos.h"
 
 /*
 - There are 6 channels comming into the receiver
@@ -10,28 +11,20 @@
 
 #define SERVO_FREQ 50 // Analog servos run at ~50 Hz updates
 
-ReceiverInput ri = ReceiverInput();
-Adafruit_PWMServoDriver pwmL = Adafruit_PWMServoDriver(0x40);
-Adafruit_PWMServoDriver pwmR = Adafruit_PWMServoDriver(0x41);
+//ReceiverInput ri = ReceiverInput();
+SetServos motors = SetServos();
 
 void setup()
 {
-  pwmL.begin();
-  pwmL.setOscillatorFrequency(27E6);
-  pwmL.setPWMFreq(SERVO_FREQ);
 
-  pwmR.begin();
-  pwmR.setOscillatorFrequency(27E6);
-  pwmR.setPWMFreq(SERVO_FREQ);
 }
 
 void loop()
 {
 
-  /* 
-  Update receiver inputs
-  */
-  ri.updateReceiverValues();
+  motors.update();
+  /*
+  ri.updateReceiverValues(); // Update receiver inputs
 
   double ailAngle = (ri.getChannel(1) - 1500.0) * (9.0/100.0);
   double eleAngle = (ri.getChannel(2) - 1500.0) * (9.0/100.0);
@@ -45,31 +38,8 @@ void loop()
 
   double upperLegRight = ((((rudAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
   double upperLegLeft = ((((rudAngle/90.0) + 1.0) + 0.5) / 20.0) * 4096.0;
+  */
 
-
-  pwmL.setPWM(13, 0, lowerLegLeft);
-  pwmL.setPWM(10, 0, lowerLegLeft);
-  pwmL.setPWM(7, 0, lowerLegLeft);
-
-  pwmR.setPWM(2, 0, lowerLegRight);
-  pwmR.setPWM(5, 0, lowerLegRight);
-  pwmR.setPWM(8, 0, lowerLegRight);
-
-  pwmL.setPWM(14, 0, midLegLeft);
-  pwmL.setPWM(11, 0, midLegLeft);
-  pwmL.setPWM(8, 0, midLegLeft);
-
-  pwmR.setPWM(1, 0, midLegRight);
-  pwmR.setPWM(4, 0, midLegRight);
-  pwmR.setPWM(7, 0, midLegRight);
-
-  pwmL.setPWM(15, 0, upperLegLeft);
-  pwmL.setPWM(12, 0, upperLegLeft);
-  pwmL.setPWM(9, 0, upperLegLeft);
-
-  pwmR.setPWM(0, 0, upperLegRight);
-  pwmR.setPWM(3, 0, upperLegRight);
-  pwmR.setPWM(6, 0, upperLegRight);
 
 
   

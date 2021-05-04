@@ -5,10 +5,16 @@ class SetServos {
 
     public:
     SetServos();
+    void update();
 
     private:
 
 
 };
+
+void calculateJointPulseWidth();
+void setAngles();
+static void initializeServoValues();
+static double angleToTime(double angle);
 
 #endif
