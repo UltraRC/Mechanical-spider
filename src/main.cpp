@@ -8,17 +8,13 @@
 - Values will be from 500 --> 2500 uS centered on 1500 uS as the neutral position
 */
 
-ReceiverInput receiver; // Collects input from receiver
+ReceiverInput receiver = ReceiverInput(true); // False meaning return receiver values as uS instead of servo degrees
 
 void setup()
 {
-  receiver = ReceiverInput(false); // false meaning return receiver values as uS instead of servo degrees
-  Serial.begin(9600);
 }
 
 void loop()
 {
   receiver.updateReceiverValues();
-  receiver.printReceiverValues();
-  //Serial.println(receiver.getChannel(0));
 }

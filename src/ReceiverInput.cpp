@@ -17,12 +17,12 @@ ReceiverInput::ReceiverInput(boolean degrees)
 {
   returnDegrees = degrees;
 
-  pinMode(RC_THR_PIN, INPUT);
-  pinMode(RC_AIL_PIN, INPUT);
-  pinMode(RC_ELE_PIN, INPUT);
-  pinMode(RC_RUD_PIN, INPUT);
-  pinMode(RC_GEA_PIN, INPUT);
-  pinMode(RC_AUX_PIN, INPUT);
+  pinMode(RC_THR_PIN, INPUT_PULLDOWN);
+  pinMode(RC_AIL_PIN, INPUT_PULLDOWN);
+  pinMode(RC_ELE_PIN, INPUT_PULLDOWN);
+  pinMode(RC_RUD_PIN, INPUT_PULLDOWN);
+  pinMode(RC_GEA_PIN, INPUT_PULLDOWN);
+  pinMode(RC_AUX_PIN, INPUT_PULLDOWN);
 
   for (int i = 0; i <= 5; i++)
   { // Set the default values for the array which holds receiver values
@@ -58,15 +58,9 @@ int ReceiverInput::getChannel(int channel)
 {
   if (channel > 5 || channel < 0)
   { // Outside the scope of channel
-    return 1500;
+    return 0;
   }
-
-  if (returnDegrees)
-  {
-    return pulseWidthToDegrees(receiverInputs[channel]);
-  }
-
-  return receiverInputs[channel];
+  return pulseWidthToDegrees(receiverInputs[channel]);
 }
 
 double ReceiverInput::pulseWidthToDegrees(int pulseWidth)
