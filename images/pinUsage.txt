@@ -1,0 +1,14 @@
+*PIN*   - *USAGE*
+-----------------
+VIN - 5V from regulator via switch
+GND - Connected to system global GND
+
+GPOI 21 - I2C SDA
+GPOO 22 - I2C SCL
+
+GPIO 36 - RC Interrupt thr
+GPIO 39 - RC Interrupt ail
+GPIO 34 - RC Interrupt ele
+GPIO 35 - RC Interrupt rud
+GPIO 32 - RC Interrupt gea
+GPIO 33 - RC Interrupt aux

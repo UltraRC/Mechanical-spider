@@ -4,17 +4,15 @@
 class SetServos {
 
     public:
-    SetServos();
-    void update();
+        SetServos();
+        void update();
 
     private:
-
+        void calculateJointPulseWidth();
+        void setAngles();
+        double angleToTime(double);
+        void initializeServoValues();
 
 };
-
-void calculateJointPulseWidth();
-void setAngles();
-static void initializeServoValues();
-static double angleToTime(double angle);
 
 #endif
