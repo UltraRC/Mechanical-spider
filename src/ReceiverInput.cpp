@@ -4,7 +4,6 @@
 int receiverInputs[6]; // uS receiver input values stored as an int
 int lastPulseTime = 0;
 volatile int valuesFromReceiver[6];
-boolean returnDegrees; // If true will return servo values [-90,90] degrees instead of [500,2500] uS
 
 /**
 Constructor:
@@ -13,10 +12,12 @@ Constructor:
 - Set default values for valuesFromReceiver[] array
 - Enable interupts for each of the RC input pins and associate each pin with a function
 */
-ReceiverInput::ReceiverInput(boolean degrees)
-{
-  returnDegrees = degrees;
 
+/**
+ * Constructor: Configures receiver GPIO pins as interrupt input pins
+ */
+ReceiverInput::ReceiverInput()
+{
   pinMode(RC_THR_PIN, INPUT_PULLDOWN);
   pinMode(RC_AIL_PIN, INPUT_PULLDOWN);
   pinMode(RC_ELE_PIN, INPUT_PULLDOWN);
@@ -44,6 +45,9 @@ void ReceiverInput::updateReceiverValues()
   interrupts();
 }
 
+/**
+ * Prints the pulse widths of all 6 channels
+ */
 void ReceiverInput::printReceiverValues()
 {
   for (int i = 0; i <= 5; i++)
@@ -63,6 +67,11 @@ int ReceiverInput::getChannel(int channel)
   return pulseWidthToDegrees(receiverInputs[channel]);
 }
 
+/**
+ * Maps pulse width from [500,2500] uS to [-90,90] degrees
+ * @param pulseWidth 
+ * @return Type long receiver input +-90 degrees
+ */
 double ReceiverInput::pulseWidthToDegrees(int pulseWidth)
 {
   return map(pulseWidth, 500, 2500, -90, 90);

@@ -18,7 +18,7 @@ class ReceiverInput
 {
 public:
     // Constructor
-    ReceiverInput(boolean degrees);
+    ReceiverInput();
 
     // Methods
     void updateReceiverValues();
