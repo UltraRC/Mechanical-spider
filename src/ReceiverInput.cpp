@@ -3,7 +3,7 @@
 
 int receiverInputs[6]; // uS receiver input values stored as an int
 int lastPulseTime = 0;
-volatile int valuesFromReceiver[6];
+volatile int valuesFromReceiver[6]; // yeet
 
 /**
 Constructor:
