@@ -80,10 +80,7 @@ double ReceiverInput::pulseWidthToDegrees(int pulseWidth)
 void readReceiverInput(uint8_t pin, uint8_t channel)
 {
   //Serial.println("Very nice");
-  if (digitalRead(pin) == HIGH)
-  {
-    lastPulseTime = micros();
-  }
+  if (digitalRead(pin) == HIGH) lastPulseTime = micros();
   else
   {
     uint16_t pulseLength = (uint16_t)(micros() - lastPulseTime);
