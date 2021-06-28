@@ -1,16 +1,12 @@
 /*
-Aims of this class:
+Aims of this file:
 - Take in angles for each joint and set the corresponding servo to that value.
 - Calibrate each joint so that it actually is where it is set
 
 Possible/future features:
 - Disable motors
-- Set motors to a storage state
 
-*/
-
-/*
-- Leg numbering
+Leg numbering:
 
   1             4
    \  _______  /
@@ -22,21 +18,24 @@ Possible/future features:
   3             6
 
   - Joint numbering is 1 for upper hip, 2 for lower hip and 3 for knee
-  - Rotations towards the front for the upper hip joints are considered possitive
+  - Clockwise rotations of the hip joint are considered possitive
   - Rotations upwards of the remaining lower hip and knee joints are considered possitive
-
 */
 
-//#include <Arduino.h>
-#include "SetServos.h"
 #include <Adafruit_PWMServoDriver.h>
 #include <Arduino.h>
+#include "ReceiverInput.h"
+#include "SetServos.h"
 
 #define SERVO_FREQUENCY 50 // Analog servos run at 50 Hz
-#define OSCILATOR_FREQUENCY 27E6 // 27 MHz clock frequency
 
-const int NUMBER_OF_LEGS = 6;
-const int NUMBER_OF_JOINTS = 3;
+const int LEGS_SIZE = 6;
+const int JOINTS_SIZE = 3;
+
+const int leftMotorPortStart = 0;
+const int leftMotorPortEnd = 8;
+const int rightMotorPortStart = 15;
+const int rightMotorPortEnd = 7;
 
 /*
 - There are two pwm servo controllers with 0x40 and 0x41 as addresses for the respective left and right driver boards
@@ -44,21 +43,17 @@ const int NUMBER_OF_JOINTS = 3;
 Adafruit_PWMServoDriver leftMotors;
 Adafruit_PWMServoDriver rightMotors;
 
-/*
-- The timing number sent to the setPwm() function is PW * SERVO_FREQUENCY * 4096 where PW is pulse with in milli seconds
-- 1.5 ms is the center servo position, 0.5 ms is the min, and 2.5 is the max
-*/
+ReceiverInput receiver = ReceiverInput(); // False meaning return receiver values as uS instead of servo degrees
 
-double jointPulseWidth [NUMBER_OF_LEGS][NUMBER_OF_JOINTS]; // Holds the pulse widths for each servo in ms * 4096 ==> A proportion of 4096
-double jointAngles [NUMBER_OF_LEGS][NUMBER_OF_JOINTS]; // Holds the angle positions for each from [-90, 90]
-const double jointOffsetAngles [NUMBER_OF_LEGS][NUMBER_OF_JOINTS] = {{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0},{0,0,0}}; // Holds the calibration or offset angle of each joint
+double jointPulseWidth [LEGS_SIZE][JOINTS_SIZE]; // Holds the pulse widths for each servo in ms * 4096 ==> A proportion of 4096
+double jointAngles [LEGS_SIZE][JOINTS_SIZE]; // Holds the angle positions for each from [-90, 90]
+const double jointOffsetAngles [LEGS_SIZE][JOINTS_SIZE] = {{6,5,0},{0,5,0},{9,-3,0},{-3,-5,0},{6,-3,0},{13,5,0}}; // Hip is possitive for anti-clockwise, thigh is negative for upwards, knee is possitive for upwards, rightMotors are reversed for thigh and knee
 
 /*
 Constructor:
 - Initialises the two PCA9685 chips
 */
-SetServos::SetServos(){
-  initializeServoValues(); // Sets the servo angles to 
+void servoInitialize(){
 
   leftMotors = Adafruit_PWMServoDriver(0x40);
   rightMotors = Adafruit_PWMServoDriver(0x41);
@@ -66,73 +61,41 @@ SetServos::SetServos(){
   leftMotors.begin();
   rightMotors.begin();
 
-  leftMotors.setOscillatorFrequency(OSCILATOR_FREQUENCY);
-  rightMotors.setOscillatorFrequency(OSCILATOR_FREQUENCY);
-
   leftMotors.setPWMFreq(SERVO_FREQUENCY);
   rightMotors.setPWMFreq(SERVO_FREQUENCY);
 }
 
-/*
-Set all default positions to 90 degrees
-*/
-void SetServos::initializeServoValues(){
-  for(int leg=0;leg<6;leg++){
-      for(int joint=0;joint<3;joint++){
-        jointAngles[leg][joint] = 50; // 0 degrees is the mechanical neutral position for all joints
+void servoUpdate(){
+  setServos();
+  receiver.updateReceiverValues();
+  for(int leg=0;leg<LEGS_SIZE/2;leg++){
+    jointAngles[leg][1] = -receiver.getChannel(0);
+  }
+  for(int leg=3;leg<LEGS_SIZE;leg++){
+    jointAngles[leg][1] = receiver.getChannel(0);
+  }
+}
+
+double angleToOnTime(int leg, int joint){
+  int angle = jointAngles[leg][joint] + jointOffsetAngles[leg][joint];
+  double onTime = map(angle, -90, 90, 500, 2500) / 20000.0; // 20,000 uS is the period of the PWM signal
+  return onTime;
+}
+
+void setServos(){
+  for(int leg=0;leg<LEGS_SIZE;leg++){
+    for(int joint=0;joint<JOINTS_SIZE;joint++){
+      int pin = 3*leg + joint;
+      if(leg>2){ // Right motors
+        pin = map(pin,8,16,rightMotorPortStart,rightMotorPortEnd);
+        int pwm = angleToOnTime(leg, joint) * 4095;
+        rightMotors.setPWM(pin,0,pwm);
       }
-    }
-}
-
-void SetServos::update(){
-  calculateJointPulseWidth(); //Given an angle, calculte its pulse width for each joint taking into account the sign conventions
-  setAngles(); //Set the servos to their calculated pulse width
-}
-
-/*
-All left leg angles are inverted due to the orrientation of the servo motors
-*/
-void SetServos::calculateJointPulseWidth(){
-  for(int leg=0;leg<NUMBER_OF_LEGS/2;leg++){ // Left legs
-    for(int joint=0;joint<NUMBER_OF_JOINTS;joint++){
-      double angle = -1 * jointAngles[leg][joint] - jointOffsetAngles[leg][joint];
-      jointPulseWidth[leg][joint] = angleToTime(angle);
-    }
-  }
-
-  for(int leg=NUMBER_OF_LEGS/2;leg<NUMBER_OF_LEGS;leg++){ // Left legs
-    for(int joint=0;joint<=NUMBER_OF_JOINTS-1;joint++){
-      double angle = jointAngles[leg][joint] + jointOffsetAngles[leg][joint];
-      jointPulseWidth[leg][joint] = angleToTime(angle);
-    }
-  }
-}
-
-/*
-Maps argument angle = [-90,90] to pulseWidth = [0.5,2.5] * 4096
-*/
-double SetServos::angleToTime(double angle){
-  double pulseWidth = (angle + 90.0) / (90.0) + 0.5;
-  pulseWidth *= 4096.0 / 20.0;
-  return pulseWidth;
-}
-
-/*
-- Sets the angle for each servo motor
-*/
-void SetServos::setAngles(){
-  
-  for(int leg=0;leg<NUMBER_OF_LEGS/2;leg++){
-    for(int joint=0;joint<NUMBER_OF_JOINTS;joint++){
-      int pin = 3*leg + joint + 7; // First joint of first leg is attached to pin 7 and ascends from there
-      leftMotors.setPWM(pin,0,jointPulseWidth[leg][joint]);
-    }
-  }
-
-  for(int leg = NUMBER_OF_LEGS/2;leg<NUMBER_OF_LEGS;leg++){
-    for(int joint=0;joint<NUMBER_OF_JOINTS;joint++){
-      int pin = 8 - 3*leg - joint; // First joint of first leg is attached to pin 8 and descends from there
-      rightMotors.setPWM(pin,0,jointPulseWidth[leg][joint]);
+      else{
+        pin = map(pin,0,8,leftMotorPortStart,leftMotorPortEnd);
+        int pwm = angleToOnTime(leg, joint) * 4095;
+        leftMotors.setPWM(pin,0,pwm);
+      }
     }
   }
 }

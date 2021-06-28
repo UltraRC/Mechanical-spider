@@ -1,18 +1,10 @@
 #ifndef SET_SERVOS_H
 #define SET_SERVOS_H
 
-class SetServos {
+void servoInitialize();
+void setServos();
+double angleToOnTime(int leg, int joint);
+void servoUpdate();
 
-    public:
-        SetServos();
-        void update();
-
-    private:
-        void calculateJointPulseWidth();
-        void setAngles();
-        double angleToTime(double);
-        void initializeServoValues();
-
-};
 
 #endif

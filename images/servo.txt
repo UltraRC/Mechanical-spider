@@ -1,0 +1,2 @@
+Servo takes in 50 Hz or 20 ms period PWM signal
+0.5 ms to 2.5 ms correspond to minimum and maximum respective angles
