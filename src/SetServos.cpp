@@ -26,16 +26,20 @@ Leg numbering:
 #include <Arduino.h>
 #include "ReceiverInput.h"
 #include "SetServos.h"
+#include <math.h>
 
 #define SERVO_FREQUENCY 50 // Analog servos run at 50 Hz
 
-const int LEGS_SIZE = 6;
-const int JOINTS_SIZE = 3;
+//const int LEGS_SIZE = 6;
+//const int JOINTS_SIZE = 3;
 
 const int leftMotorPortStart = 0;
 const int leftMotorPortEnd = 8;
 const int rightMotorPortStart = 15;
 const int rightMotorPortEnd = 7;
+
+const int LEGS_SIZE = 6;
+const int JOINTS_SIZE = 3;
 
 /*
 - There are two pwm servo controllers with 0x40 and 0x41 as addresses for the respective left and right driver boards
@@ -47,7 +51,7 @@ ReceiverInput receiver = ReceiverInput(); // False meaning return receiver value
 
 double jointPulseWidth [LEGS_SIZE][JOINTS_SIZE]; // Holds the pulse widths for each servo in ms * 4096 ==> A proportion of 4096
 double jointAngles [LEGS_SIZE][JOINTS_SIZE]; // Holds the angle positions for each from [-90, 90]
-const double jointOffsetAngles [LEGS_SIZE][JOINTS_SIZE] = {{6,5,0},{0,5,0},{9,-3,0},{-3,-5,0},{6,-3,0},{13,5,0}}; // Hip is possitive for anti-clockwise, thigh is negative for upwards, knee is possitive for upwards, rightMotors are reversed for thigh and knee
+const double jointOffsetAngles [LEGS_SIZE][JOINTS_SIZE] = {{6,5,0},{0,5,0},{9,-3,0},{10,0,20},{6,-3,0},{0,5,10}}; // Hip is possitive for anti-clockwise, thigh is negative for upwards, knee is possitive for upwards, rightMotors are reversed for thigh and knee
 
 /*
 Constructor:
@@ -97,5 +101,20 @@ void setServos(){
         leftMotors.setPWM(pin,0,pwm);
       }
     }
+  }
+}
+
+/**
+ * - Sets the angle for a particular joint on a particular leg
+ * - Due to the geometry and physical arrangement of the servo
+ * motors on the robot, some of the angle signs need to be reversed,
+ * hence the use of the signModifer variable.
+ **/
+void setAngle(int leg, int joint, double angle){
+  int signModifier = 0;
+  if(leg >=1 || leg <=6 || joint >=1 || joint <=3){
+    if(leg>=4)signModifier++;
+    if(joint==2)signModifier++;
+    jointAngles[leg-1][joint-1] = pow(-1,signModifier)*(angle + 90*(int)(joint==3));
   }
 }
