@@ -58,6 +58,9 @@ void ReceiverInput::printReceiverValues()
   Serial.print("\n");
 }
 
+/**
+ * THR:0, AIL:1, ELE:2, RUD:3, GEA:4, AUX:5 
+ **/
 int ReceiverInput::getChannel(int channel)
 {
   if (channel > 5 || channel < 0)

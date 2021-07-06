@@ -22,9 +22,14 @@ Leg numbering:
   - Rotations upwards of the remaining lower hip and knee joints are considered possitive
 */
 
+/*
+- There are 6 channels comming into the receiver
+- Channels 0-->5 proceed. THR:0, AIL:1, ELE:2, RUD:3, GEA:4, AUX:5
+- Values will be from 500 --> 2500 uS centered on 1500 uS as the neutral position
+*/
+
 #include <Adafruit_PWMServoDriver.h>
 #include <Arduino.h>
-#include "ReceiverInput.h"
 #include "SetServos.h"
 #include <math.h>
 
@@ -46,8 +51,6 @@ const int JOINTS_SIZE = 3;
 */
 Adafruit_PWMServoDriver leftMotors;
 Adafruit_PWMServoDriver rightMotors;
-
-ReceiverInput receiver = ReceiverInput(); // False meaning return receiver values as uS instead of servo degrees
 
 double jointPulseWidth [LEGS_SIZE][JOINTS_SIZE]; // Holds the pulse widths for each servo in ms * 4096 ==> A proportion of 4096
 double jointAngles [LEGS_SIZE][JOINTS_SIZE]; // Holds the angle positions for each from [-90, 90]
@@ -71,13 +74,6 @@ void servoInitialize(){
 
 void servoUpdate(){
   setServos();
-  receiver.updateReceiverValues();
-  for(int leg=0;leg<LEGS_SIZE/2;leg++){
-    jointAngles[leg][1] = -receiver.getChannel(0);
-  }
-  for(int leg=3;leg<LEGS_SIZE;leg++){
-    jointAngles[leg][1] = receiver.getChannel(0);
-  }
 }
 
 double angleToOnTime(int leg, int joint){
