@@ -14,6 +14,15 @@
 #define RC_GEA_PIN 32
 #define RC_AUX_PIN 33
 
+typedef enum {
+    THR,
+    AIL,
+    ELE,
+    RUD,
+    GEA,
+    AUX
+} Channel_t;
+
 class ReceiverInput
 {
 public:
