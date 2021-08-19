@@ -7,15 +7,24 @@
 - Values will be from 500 --> 2500 uS centered on 1500 uS as the neutral position
 */
 
-#define RC_THR_PIN 36
-#define RC_AIL_PIN 39
-#define RC_ELE_PIN 34
-#define RC_RUD_PIN 35
-#define RC_GEA_PIN 32
-#define RC_AUX_PIN 33
+// Physical pin connections from receiver to the micro-controller
+#define THR_PIN 36
+#define AIL_PIN 39
+#define ELE_PIN 34
+#define RUD_PIN 35
+#define GEA_PIN 32
+#define AUX_PIN 33
+
+#define NUM_CHANNELS 6
+
+#define MIN_PULSEWIDTH 1500 // uS
+#define MAX_PULSEWIDTH 2500
+
+#define MIN_NORM_INPUT -100
+#define MAX_NORM_INPUT 100
 
 typedef enum {
-    THR,
+    THR = 0,
     AIL,
     ELE,
     RUD,
@@ -23,23 +32,23 @@ typedef enum {
     AUX
 } Channel_t;
 
+uint32_t receiverPulsewidth[NUM_CHANNELS]; // Holds pulsewidths (500,2500) uS for each channel
+volatile uint32_t receiverPulsewidthBuffer[NUM_CHANNELS];
+
 class ReceiverInput
 {
 public:
-    // Constructor
     ReceiverInput();
-
-    // Methods
-    void updateReceiverValues();
-    void printReceiverValues();
-
-    int getChannel(int channel);
+    void update();
+    double getChannel(Channel_t channel);
+    uint32_t getChannelPulsewidth(Channel_t channel);
 
 private:
-    double pulseWidthToDegrees(int pulseWidth);
+    void copyBuffer();
+    double pulsewidthNormalize(Channel_t channel);
 };
 
-void readReceiverInput(uint8_t pin, uint8_t channel);
+void measurePulseWidth(uint8_t pin, Channel_t channel);
 void IRAM_ATTR thrInterrupt();
 void IRAM_ATTR ailInterrupt();
 void IRAM_ATTR eleInterrupt();
