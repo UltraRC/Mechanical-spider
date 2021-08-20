@@ -1,98 +1,106 @@
 #include <Arduino.h>
 #include "ReceiverInput.h"
 
-int receiverInputs[6]; // uS receiver input values stored as an int
-int lastPulseTime = 0;
-volatile int valuesFromReceiver[6]; // yeet
+uint32_t receiverPulsewidth[NUM_CHANNELS]; // Holds pulsewidths (500,2500) uS for each channel
+volatile uint32_t receiverPulsewidthBuffer[NUM_CHANNELS];
 
-/**
-Constructor:
-- boolean degrees, true for return in degrees [-90,90] or false for uS [500,2500]
-- Initilize all input pins
-- Set default values for valuesFromReceiver[] array
-- Enable interupts for each of the RC input pins and associate each pin with a function
-*/
-
-/**
- * Constructor: Configures receiver GPIO pins as interrupt input pins
- */
 ReceiverInput::ReceiverInput()
 {
-  pinMode(RC_THR_PIN, INPUT_PULLDOWN);
-  pinMode(RC_AIL_PIN, INPUT_PULLDOWN);
-  pinMode(RC_ELE_PIN, INPUT_PULLDOWN);
-  pinMode(RC_RUD_PIN, INPUT_PULLDOWN);
-  pinMode(RC_GEA_PIN, INPUT_PULLDOWN);
-  pinMode(RC_AUX_PIN, INPUT_PULLDOWN);
+  pinMode(THR_PIN, INPUT);
+  pinMode(AIL_PIN, INPUT);
+  pinMode(ELE_PIN, INPUT);
+  pinMode(RUD_PIN, INPUT);
+  pinMode(GEA_PIN, INPUT);
+  pinMode(AUX_PIN, INPUT);
+  
+  initPulsewidthArray();
 
-  for (int i = 0; i <= 5; i++)
-  { // Set the default values for the array which holds receiver values
-    valuesFromReceiver[i] = 1500;
-  }
-
-  attachInterrupt(RC_THR_PIN, thrInterrupt, CHANGE);
-  attachInterrupt(RC_AIL_PIN, ailInterrupt, CHANGE);
-  attachInterrupt(RC_ELE_PIN, eleInterrupt, CHANGE);
-  attachInterrupt(RC_RUD_PIN, rudInterrupt, CHANGE);
-  attachInterrupt(RC_GEA_PIN, geaInterrupt, CHANGE);
-  attachInterrupt(RC_AUX_PIN, auxInterrupt, CHANGE);
+  attachInterrupt(THR_PIN, thrInterrupt, CHANGE);
+  attachInterrupt(AIL_PIN, ailInterrupt, CHANGE);
+  attachInterrupt(ELE_PIN, eleInterrupt, CHANGE);
+  attachInterrupt(RUD_PIN, rudInterrupt, CHANGE);
+  attachInterrupt(GEA_PIN, geaInterrupt, CHANGE);
+  attachInterrupt(AUX_PIN, auxInterrupt, CHANGE);
 }
 
-void ReceiverInput::updateReceiverValues()
+void ReceiverInput::update()
+{
+  copyBuffer();
+}
+
+int32_t ReceiverInput::getChannel(Channel_t channel)
+{
+  return pulsewidthNormalize(channel);
+}
+
+uint32_t ReceiverInput::getChannelPulsewidth(Channel_t channel)
+{
+  return receiverPulsewidth[channel];
+}
+
+void ReceiverInput::copyBuffer()
 {
   noInterrupts();
-  memcpy(receiverInputs, (const void *)valuesFromReceiver, sizeof(valuesFromReceiver));
+  memcpy(receiverPulsewidth, (const void *)receiverPulsewidthBuffer, sizeof(receiverPulsewidthBuffer));
   interrupts();
 }
 
-/**
- * Prints the pulse widths of all 6 channels
- */
-void ReceiverInput::printReceiverValues()
+int32_t ReceiverInput::pulsewidthNormalize(Channel_t channel)
 {
-  for (int i = 0; i <= 5; i++)
-  {
-    Serial.print(receiverInputs[i]);
-    Serial.print("\t");
-  }
-  Serial.print("\n");
+  int32_t pw = getChannelPulsewidth(channel); // pw ==> Pulsewidth
+  pw = map(pw, MIN_PULSEWIDTH, MAX_PULSEWIDTH, MIN_NORM_INPUT, MAX_NORM_INPUT);
+  return constrain(pw, MIN_NORM_INPUT, MAX_NORM_INPUT);
 }
 
-/**
- * THR:0, AIL:1, ELE:2, RUD:3, GEA:4, AUX:5 
- **/
-int ReceiverInput::getChannel(int channel)
+void ReceiverInput::initPulsewidthArray()
 {
-  if (channel > 5 || channel < 0)
-  { // Outside the scope of channel
-    return 0;
-  }
-  return pulseWidthToDegrees(receiverInputs[channel]);
-}
-
-/**
- * Maps pulse width from [500,2500] uS to [-90,90] degrees
- * @param pulseWidth 
- * @return Type long receiver input +-90 degrees
- */
-double ReceiverInput::pulseWidthToDegrees(int pulseWidth)
-{
-  return map(pulseWidth, 500, 2500, -90, 90);
-}
-
-void readReceiverInput(uint8_t pin, uint8_t channel)
-{
-  if (digitalRead(pin) == HIGH) lastPulseTime = micros();
-  else
-  {
-    uint16_t pulseLength = (uint16_t)(micros() - lastPulseTime);
-    valuesFromReceiver[channel] = pulseLength;
+  for(uint8_t i=THR; i<=AUX; i++) {
+    receiverPulsewidthBuffer[i] = (MAX_PULSEWIDTH + MIN_PULSEWIDTH) / 2;
   }
 }
 
-void IRAM_ATTR thrInterrupt() { readReceiverInput(RC_THR_PIN, 0); }
-void IRAM_ATTR ailInterrupt() { readReceiverInput(RC_AIL_PIN, 1); }
-void IRAM_ATTR eleInterrupt() { readReceiverInput(RC_ELE_PIN, 2); }
-void IRAM_ATTR rudInterrupt() { readReceiverInput(RC_RUD_PIN, 3); }
-void IRAM_ATTR geaInterrupt() { readReceiverInput(RC_GEA_PIN, 4); }
-void IRAM_ATTR auxInterrupt() { readReceiverInput(RC_AUX_PIN, 5); }
+void measurePulseWidth(uint8_t pin, Channel_t channel, uint32_t* pulseStart)
+{
+  if(digitalRead(pin)) {
+    *pulseStart = micros();
+  } else {
+    receiverPulsewidthBuffer[channel] = micros() - *pulseStart;
+  }
+}
+
+// ----------------------- Interrupt functions ------------------------
+
+void IRAM_ATTR thrInterrupt()
+{
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(THR_PIN, THR, &pulseStart);
+}
+
+void IRAM_ATTR ailInterrupt()
+{
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(AIL_PIN, AIL, &pulseStart);
+}
+
+void IRAM_ATTR eleInterrupt()
+{
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(ELE_PIN, ELE, &pulseStart);
+}
+
+void IRAM_ATTR rudInterrupt()
+{
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(RUD_PIN, RUD, &pulseStart);
+}
+
+void IRAM_ATTR geaInterrupt(){
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(GEA_PIN, GEA, &pulseStart);
+}
+
+void IRAM_ATTR auxInterrupt()
+{
+  static uint32_t pulseStart = 0;
+  measurePulseWidth(AUX_PIN, AUX, &pulseStart);
+}
