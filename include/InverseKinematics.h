@@ -1,11 +1,10 @@
 #ifndef INVERSE_KINEMATICS_H
 #define INVERSE_KINEMATICS_H
 
-void updateAngles(double x, double y, double z);
+#include "Leg.h"
+
+Vector3_t calculateAngles(Vector3_t position);
 double calculateAlpha(double R);
 double calculateBeta(double R);
 double toDegrees(double angle);
-double getTheta1();
-double getTheta2();
-double getTheta3();
 #endif

@@ -3,114 +3,96 @@ Aims of this file:
 - Take in angles for each joint and set the corresponding servo to that value.
 - Calibrate each joint so that it actually is where it is set
 
-Possible/future features:
-- Disable motors
-
 Leg numbering:
 
-  1             4
+  1             6 
    \  _______  /
     \/       \/
 2---|         |---5
     |         |
     /\_______/\
    /           \
-  3             6
+  3             4
 
-  - Joint numbering is 1 for upper hip, 2 for lower hip and 3 for knee
-  - Clockwise rotations of the hip joint are considered possitive
+  - Joint numbering is 0 for upper hip, 1 for lower hip and 2 for knee
+  - Anti-clockwise rotations of the hip joint are considered possitive
   - Rotations upwards of the remaining lower hip and knee joints are considered possitive
 */
 
-/*
-- There are 6 channels comming into the receiver
-- Channels 0-->5 proceed. THR:0, AIL:1, ELE:2, RUD:3, GEA:4, AUX:5
-- Values will be from 500 --> 2500 uS centered on 1500 uS as the neutral position
-*/
-
-#include <Adafruit_PWMServoDriver.h>
 #include <Arduino.h>
+#include <Adafruit_PWMServoDriver.h>
+#include <Wire.h>
 #include "SetServos.h"
-#include <math.h>
-
-#define SERVO_FREQUENCY 50 // Analog servos run at 50 Hz
 
 //const int LEGS_SIZE = 6;
 //const int JOINTS_SIZE = 3;
 
-const int leftMotorPortStart = 0;
-const int leftMotorPortEnd = 8;
-const int rightMotorPortStart = 15;
-const int rightMotorPortEnd = 7;
+//const int LEGS_SIZE = 6;
+//const int JOINTS_SIZE = 3;
 
-const int LEGS_SIZE = 6;
-const int JOINTS_SIZE = 3;
+bool servosEnabled = true;
 
 /*
 - There are two pwm servo controllers with 0x40 and 0x41 as addresses for the respective left and right driver boards
 */
-Adafruit_PWMServoDriver leftMotors;
-Adafruit_PWMServoDriver rightMotors;
-
-double jointPulseWidth [LEGS_SIZE][JOINTS_SIZE]; // Holds the pulse widths for each servo in ms * 4096 ==> A proportion of 4096
-double jointAngles [LEGS_SIZE][JOINTS_SIZE]; // Holds the angle positions for each from [-90, 90]
-const double jointOffsetAngles [LEGS_SIZE][JOINTS_SIZE] = {{6,5,0},{0,5,0},{9,-3,0},{10,0,20},{6,-3,0},{0,5,10}}; // Hip is possitive for anti-clockwise, thigh is negative for upwards, knee is possitive for upwards, rightMotors are reversed for thigh and knee
+Adafruit_PWMServoDriver leftBoard;
+Adafruit_PWMServoDriver rightBoard;
 
 /*
 Constructor:
 - Initialises the two PCA9685 chips
 */
 void servoInitialize(){
-
-  leftMotors = Adafruit_PWMServoDriver(0x40);
-  rightMotors = Adafruit_PWMServoDriver(0x41);
-    
-  leftMotors.begin();
-  rightMotors.begin();
-
-  leftMotors.setPWMFreq(SERVO_FREQUENCY);
-  rightMotors.setPWMFreq(SERVO_FREQUENCY);
+  leftBoard = Adafruit_PWMServoDriver(LEFT_BOARD_ADDRESS);
+  rightBoard = Adafruit_PWMServoDriver(RIGHT_BOARD_ADDRESS);
+  
+  leftBoard.begin();
+  leftBoard.setPWMFreq(SERVO_FREQUENCY);
+  
+  rightBoard.begin();
+  rightBoard.setPWMFreq(SERVO_FREQUENCY);
 }
 
-void servoUpdate(){
-  setServos();
+double angleToOnTime(int8_t angle){
+  int32_t onTime = map(angle, -90, 90, 500, 2500); // 20,000 uS is the period of the PWM signal
+  onTime = constrain(onTime, 500, 2500);
+  return onTime * 4096 * SERVO_FREQUENCY * 0.000001;
 }
 
-double angleToOnTime(int leg, int joint){
-  int angle = jointAngles[leg][joint] + jointOffsetAngles[leg][joint];
-  double onTime = map(angle, -90, 90, 500, 2500) / 20000.0; // 20,000 uS is the period of the PWM signal
-  return onTime;
-}
+void updateServos(Leg* legs)
+{
+  if(servosEnabled) {
+    leftBoard.wakeup();
+    rightBoard.wakeup();
+  } else {
+    leftBoard.sleep();
+    rightBoard.sleep();
+  }
 
-void setServos(){
-  for(int leg=0;leg<LEGS_SIZE;leg++){
-    for(int joint=0;joint<JOINTS_SIZE;joint++){
-      int pin = 3*leg + joint;
-      if(leg>2){ // Right motors
-        pin = map(pin,8,16,rightMotorPortStart,rightMotorPortEnd);
-        int pwm = angleToOnTime(leg, joint) * 4095;
-        rightMotors.setPWM(pin,0,pwm);
-      }
-      else{
-        pin = map(pin,0,8,leftMotorPortStart,leftMotorPortEnd);
-        int pwm = angleToOnTime(leg, joint) * 4095;
-        leftMotors.setPWM(pin,0,pwm);
-      }
+  for(uint i=0; i<NUM_LEGS; i++) {
+        int8_t hipAngle = legs[i].getAngle(HIP_JOINT);
+        int8_t thighAngle = legs[i].getAngle(THIGH_JOINT);
+        int8_t kneeAngle = legs[i].getAngle(KNEE_JOINT);
+        if(legs[i].getBoard() == LEFT_BOARD) {
+            leftBoard.setPin(legs[i].getHipPin(), angleToOnTime(hipAngle));
+            leftBoard.setPin(legs[i].getThighPin(), angleToOnTime(thighAngle));
+            leftBoard.setPin(legs[i].getKneePin(), angleToOnTime(kneeAngle));
+        }
+
+        if(legs[i].getBoard() == RIGHT_BOARD) {
+            rightBoard.setPin(legs[i].getHipPin(), angleToOnTime(hipAngle));
+            rightBoard.setPin(legs[i].getThighPin(), angleToOnTime(thighAngle));
+            rightBoard.setPin(legs[i].getKneePin(), angleToOnTime(kneeAngle));
+        }
     }
-  }
 }
 
-/**
- * - Sets the angle for a particular joint on a particular leg
- * - Due to the geometry and physical arrangement of the servo
- * motors on the robot, some of the angle signs need to be reversed,
- * hence the use of the signModifer variable.
- **/
-void setAngle(int leg, int joint, double angle){
-  int signModifier = 0;
-  if(leg >=1 || leg <=6 || joint >=1 || joint <=3){
-    if(leg>=4)signModifier++;
-    if(joint==2)signModifier++;
-    jointAngles[leg-1][joint-1] = pow(-1,signModifier)*(angle + 90*(int)(joint==3));
-  }
+void enableServos()
+{
+  servosEnabled = true;
+}
+
+void disableServos()
+{
+  servosEnabled = false;
 }

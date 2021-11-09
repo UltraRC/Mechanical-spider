@@ -1,19 +1,26 @@
 #include <Arduino.h>
-#include "ReceiverInput.h"
+#include "Leg.h"
+#include "LegManager.h"
 
-ReceiverInput receiver;
+#define UPDATE_FREQ 50
+
+LegManager lm;
+
+uint64_t lastTime = 0;
 
 void setup()
 {
+    lm = LegManager();
     Serial.begin(9600);
 }
 
 void loop()
 {
-    receiver.update();
+    uint64_t delta = esp_timer_get_time() - lastTime;
 
-    for(uint8_t i=THR; i<=AUX; i++) {
-        printf("%d\t", receiver.getChannelPulsewidth((Channel_t)i));
+    if(delta >= 1000000 / UPDATE_FREQ) {
+        lastTime = esp_timer_get_time();
+        lm.update();
+        //Serial.printf("Delta: %ld\n", delta);
     }
-    printf("\n");
 }
