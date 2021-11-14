@@ -2,38 +2,25 @@
 #define SET_SERVOS_H
 
 #include "Leg.h"
+#include "accessory.h"
 
-#define LEFT_BOARD_ADDRESS 0x40
-#define RIGHT_BOARD_ADDRESS 0x41
-#define LEFT_BOARD 1
-#define RIGHT_BOARD 2
+#define SERVO_FREQUENCY 50 // TODO Problem: defined in two places
 
-#define SERVO_FREQUENCY 50 // Analog servos run at 50 Hz
+class SetServos {
+    private:
+        Vector3_t* legEndPosition;
+        servoReverse_t servoReverse;
+        double angleToOnTime(int8_t angle);
 
-void servoInitialize();
+        Adafruit_PWMServoDriver board;
+        uint8_t hip_pin;
+        uint8_t thigh_pin;
+        uint8_t knee_pin;
 
-/**
- * @param angle [int8_t] Takes an angle in the range [-90,90], and
- * returns an integer number calculated by ratio: time / (4096 * update_period) 
- * which represents the duty cycle percentage, but as a proportion
- */
-double angleToOnTime(int8_t angle);
-
-/**
- * @param legs [Leg*] A pointer to an array of legs
- * This function takes angle values stored in each Leg object
- * and sets the corresponding joint servo to that angle
- */
-void updateServos(Leg* legs);
-
-/**
- * Wakes up both servo controller boards
- */
-void enableServos();
-
-/**
- * Makes both servo controller boards sleep
- */
-void disableServos();
+    public:
+        SetServos();
+        SetServos(Vector3_t* legEndPosition, servoConnection_t servoConnectionConfig, servoReverse_t servoReverse);
+        void updateServoPositions();
+};
 
 #endif //SET_SERVOS_H

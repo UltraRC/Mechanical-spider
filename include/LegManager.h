@@ -1,14 +1,11 @@
 #ifndef LEG_MANAGER_H
 #define LEG_MANAGER
 
-#include "Leg.h"
+#define LEFT_BOARD_ADDRESS 0x40
+#define RIGHT_BOARD_ADDRESS 0x41
 
-class LegManager {
-    public:
-        LegManager();
-        void update();
-        void updateLegs();
-    private:
-};
+void initServoControllers();
+
+void updateLegs();
 
 #endif
