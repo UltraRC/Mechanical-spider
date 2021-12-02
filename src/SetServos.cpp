@@ -23,6 +23,11 @@ Leg numbering:
 #include <Adafruit_PWMServoDriver.h>
 #include "SetServos.h"
 
+SetServos::SetServos()
+{
+
+}
+
 SetServos::SetServos(Vector3_t* legEndPosition, servoConnection_t servoConnectionConfig, servoReverse_t servoReverse)
 {
   this->legEndPosition = legEndPosition;
@@ -38,7 +43,7 @@ SetServos::SetServos(Vector3_t* legEndPosition, servoConnection_t servoConnectio
  * returns an integer number calculated by ratio: time / (4096 * update_period) 
  * which represents the duty cycle percentage, but as a proportion
  */
-double SetServos::angleToOnTime(int8_t angle){
+uint16_t SetServos::angleToOnTime(int8_t angle){
   int32_t onTime = map(angle, -90, 90, 500, 2500); // 20,000 uS is the period of the PWM signal
   onTime = constrain(onTime, 500, 2500);
   return onTime * 4096 * SERVO_FREQUENCY * 0.000001;
@@ -46,7 +51,15 @@ double SetServos::angleToOnTime(int8_t angle){
 
 void SetServos::updateServoPositions()
 {
-  board.setPin(hip_pin, angleToOnTime(legEndPosition->x), servoReverse.hipJointIsReversed);
-  board.setPin(thigh_pin, angleToOnTime(legEndPosition->y), servoReverse.thighJointIsReversed);
-  board.setPin(knee_pin, angleToOnTime(legEndPosition->z), servoReverse.kneeJointIsReversed);
+  Serial.printf("Angle to times: x: %f, y: %f, z: %f \n", angleToOnTime(legEndPosition->x), angleToOnTime(legEndPosition->y), angleToOnTime(legEndPosition->z));
+  board.setPin(hip_pin, angleToOnTime(legEndPosition->x));
+  board.setPin(thigh_pin, angleToOnTime(legEndPosition->y));
+  board.setPin(knee_pin, angleToOnTime(legEndPosition->z));
+}
+
+void SetServos::reverseAngles()
+{
+  if(servoReverse.hipJointIsReversed) {legEndPosition->x *= -1;}
+  if(servoReverse.thighJointIsReversed) {legEndPosition->y *= -1;}
+  if(servoReverse.kneeJointIsReversed) {legEndPosition->z *= -1;}
 }

@@ -38,8 +38,6 @@ Vector3_t calculateAngles(Vector3_t position)
     theta2 = toDegrees(theta2);
     theta3 = toDegrees(theta3);
 
-    //Serial.printf("T1: %f, T2: %f, T3: %f\n", theta1, theta2, theta3); // TODO remove this code if not needed
-
     Vector3_t angles = {theta1, theta2, theta3+90}; // TODO put this +90 degrees somewhere else, maybe an array of offset angles
     return angles;
 }

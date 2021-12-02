@@ -1,16 +1,14 @@
 #ifndef SET_SERVOS_H
 #define SET_SERVOS_H
 
-#include "Leg.h"
 #include "accessory.h"
-
-#define SERVO_FREQUENCY 50 // TODO Problem: defined in two places
 
 class SetServos {
     private:
         Vector3_t* legEndPosition;
         servoReverse_t servoReverse;
-        double angleToOnTime(int8_t angle);
+        uint16_t angleToOnTime(int8_t angle);
+        void reverseAngles();
 
         Adafruit_PWMServoDriver board;
         uint8_t hip_pin;

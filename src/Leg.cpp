@@ -3,21 +3,27 @@
 #include "SetServos.h"
 
 //bool Leg::legLegLifted[];
-
-SetServos setServos;
+//SetServos setServos;
 
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse)
 {
     this->servoConnectionConfig = servoConnection;
     this->legPosition = legPosition;
     this->servoReverse = servoReverse;
-
+    position = {0,45,0};
     setServos = SetServos(&position, servoConnectionConfig, servoReverse);
 }
 
 void Leg::update()
 {
     setServos.updateServoPositions();
+}
+
+void Leg::setPosition(int32_t x, int32_t y, int32_t z)
+{
+    position.x = x;
+    position.y = y;
+    position.z = z;
 }
 
 /**
