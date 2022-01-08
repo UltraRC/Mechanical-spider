@@ -9,7 +9,13 @@ typedef struct {
     double z;
 } Vector3_t;
 
-//Describes the way the motors of each servo are connected to the electrical system
+/**
+ * @brief Describes the way the motors of each servo are connected to the electrical system
+ * @param board [Adafruit_PWMServoDriver] // Which board is used (left or right)
+ * @param hip_pin [uint8_t] // Physical pin used to connect this servo to its respective board
+ * @param thigh_pin [uint8_t]
+ * @param knee_pin [uint8_t]
+ */
 typedef struct {
     Adafruit_PWMServoDriver board;
     uint8_t hip_pin;

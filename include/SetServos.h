@@ -7,8 +7,7 @@ class SetServos {
     private:
         Vector3_t* legEndPosition;
         servoReverse_t servoReverse;
-        uint16_t angleToOnTime(int8_t angle);
-        void reverseAngles();
+        uint16_t angleToOnTime(int8_t angle, bool reverse);
 
         Adafruit_PWMServoDriver board;
         uint8_t hip_pin;

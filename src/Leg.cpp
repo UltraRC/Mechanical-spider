@@ -8,7 +8,7 @@
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse)
 {
     this->servoConnectionConfig = servoConnection;
-    this->legPosition = legPosition;
+    this->legPosition = legPosition; // Angle and distance of leg mounting positions
     this->servoReverse = servoReverse;
     position = {0,45,0};
     setServos = SetServos(&position, servoConnectionConfig, servoReverse);
@@ -19,8 +19,15 @@ void Leg::update()
     setServos.updateServoPositions();
 }
 
+/**
+ * @brief Stores the xyz cooordinate position of the leg end relative to the hip joint
+ * @param x [int32_t]
+ * @param y [int32_t]
+ * @param z [int32_t]
+ */
 void Leg::setPosition(int32_t x, int32_t y, int32_t z)
 {
+    Serial.printf("hip=%d, thigh=%d, knee=%d\n", x, y, z);
     position.x = x;
     position.y = y;
     position.z = z;
