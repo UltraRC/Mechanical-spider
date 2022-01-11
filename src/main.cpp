@@ -8,7 +8,6 @@ uint64_t lastTime = 0;
 void setup()
 {
     initServoControllers();
-    Serial.begin(9600);
 }
 
 void loop()

@@ -21,17 +21,17 @@ servoConnection_t legConnection5 = {rightBoard, 3, 4, 5};
 servoConnection_t legConnection6 = {rightBoard, 6, 7, 8};
 
 // Information for the position of each leg
-legPosition_t legPosition1 = {0, 0}; // TODO add angle and radius information here
-legPosition_t legPosition2 = {0, 0};
-legPosition_t legPosition3 = {0, 0};
-legPosition_t legPosition4 = {0, 0};
-legPosition_t legPosition5 = {0, 0};
-legPosition_t legPosition6 = {0, 0};
+legPosition_t legPosition1 = {120, RADIUS};
+legPosition_t legPosition2 = {180, RADIUS};
+legPosition_t legPosition3 = {240, RADIUS};
+legPosition_t legPosition4 = {300, RADIUS};
+legPosition_t legPosition5 = {0, RADIUS};
+legPosition_t legPosition6 = {60, RADIUS};
 
 // Information on the direction of each servo in each leg
 // A state of true means the servo is reversed
 // Order of joints is {hipJointIsReversed, thighJointIsReversed, KneeJointIsReversed}
-servoReverse_t servoReverse1 = {false, true , false}; // TODO set the servo directions here
+servoReverse_t servoReverse1 = {false, true , false};
 servoReverse_t servoReverse2 = {false, true , false};
 servoReverse_t servoReverse3 = {false, true , false};
 servoReverse_t servoReverse4 = {false, false, true };
@@ -39,12 +39,12 @@ servoReverse_t servoReverse5 = {false, false, true };
 servoReverse_t servoReverse6 = {false, false, true };
 
 Leg legs[NUM_LEGS] = {
-    Leg(legConnection1, legPosition1, servoReverse1),
-    Leg(legConnection2, legPosition2, servoReverse2),
-    Leg(legConnection3, legPosition3, servoReverse3),
-    Leg(legConnection4, legPosition4, servoReverse4),
-    Leg(legConnection5, legPosition5, servoReverse5),
-    Leg(legConnection6, legPosition6, servoReverse6)
+    Leg(legConnection1, legPosition1, servoReverse1, receiver),
+    Leg(legConnection2, legPosition2, servoReverse2, receiver),
+    Leg(legConnection3, legPosition3, servoReverse3, receiver),
+    Leg(legConnection4, legPosition4, servoReverse4, receiver),
+    Leg(legConnection5, legPosition5, servoReverse5, receiver),
+    Leg(legConnection6, legPosition6, servoReverse6, receiver)
 };
 
 // ----------------- ----------------- ----------------- -----------------v

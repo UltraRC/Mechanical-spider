@@ -23,13 +23,16 @@ typedef struct {
     uint8_t knee_pin;
 } servoConnection_t;
 
+#define RADIUS 80 // [mm]
+
 /**
- * @brief Describes the position of a leg 
- * relative to the center of the robot
+ * @brief Describes the position of a leg relative to the center of the robot
+ * @param angleFromFoward [uint8_t] // Anti-clockwise angle in radians from the foward directions
+ * @param radius [uint8_t] distance from center of robot to the hip joint in [mm]
  */
 typedef struct {
-    uint8_t angleFromFoward; // Angular position from the foward position // TODO add direction (clockwise/anticlockwise)
-    uint8_t radius; // Distance from the global reference frame (center of the robot)
+    double angleFromFoward; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
+    double radius; // Distance from the global reference frame (center of the robot)
 } legPosition_t;
 
 /**

@@ -4,6 +4,7 @@
 #include <Adafruit_PWMServoDriver.h>
 #include "accessory.h"
 #include "SetServos.h"
+#include "ReceiverInput.h"
 
 #define NUM_LEGS 6
 #define NUM_JOINTS 
@@ -23,7 +24,7 @@ class Leg {
 
     public:
         Leg();
-        Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse);
+        Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver);
         //static bool legLegLifted[NUM_LEGS]; // Each leg needs to be aware of its neighbouring legs state
         void update();
         void setPosition(int32_t x, int32_t y, int32_t z); // TODO Temporary REMOVE!!!
@@ -33,9 +34,11 @@ class Leg {
         legPosition_t legPosition; // Angle from front and radius
         servoReverse_t servoReverse;
         SetServos setServos;
+        ReceiverInput receiver;
         
-        int8_t angles[NUM_JOINTS]; // Holds the positions for each joint angle
-        Vector3_t position; // Holds the coordinates of the end of the leg relative to the coordinate of the hip joint
+        Vector3_t defaultPosition; // [XYZ] Holds the default position coordinates of the end of the leg relative to the coordinate of the hip joint
+        Vector3_t position; // [XYZ] Holds the absolute position of the leg end from the hip [mm]
+        Vector3_t angles; // [HIP, THIGH, KNEE] // Holds the positions for each joint angle
 };
 
 #endif //LEG_H

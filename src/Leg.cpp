@@ -1,21 +1,36 @@
 #include <Arduino.h>
 #include "Leg.h"
 #include "SetServos.h"
+#include "InverseKinematics.h"
 
 //bool Leg::legLegLifted[];
 //SetServos setServos;
 
-Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse)
+Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver)
 {
     this->servoConnectionConfig = servoConnection;
     this->legPosition = legPosition; // Angle and distance of leg mounting positions
     this->servoReverse = servoReverse;
-    position = {0,45,0};
-    setServos = SetServos(&position, servoConnectionConfig, servoReverse);
+    this-> receiver = receiver;
+    defaultPosition = {80,0,-60};
+    setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
 }
 
 void Leg::update()
 {
+    int32_t x = -1*receiver.getChannel(AIL)/10;
+    int32_t y =    receiver.getChannel(ELE)/10;
+
+    double theta = toRadians(legPosition.angleFromFoward);
+
+    int32_t x_prime = x*cos(theta) + y*sin(theta);
+    int32_t y_prime = y*cos(theta) - x*sin(theta);
+
+    position.x = defaultPosition.x - x_prime;
+    position.y = defaultPosition.y - y_prime;
+    position.z = defaultPosition.z - receiver.getChannel(THR)/10;
+
+    angles = calculateAngles(position);
     setServos.updateServoPositions();
 }
 
@@ -27,7 +42,6 @@ void Leg::update()
  */
 void Leg::setPosition(int32_t x, int32_t y, int32_t z)
 {
-    Serial.printf("hip=%d, thigh=%d, knee=%d\n", x, y, z);
     position.x = x;
     position.y = y;
     position.z = z;

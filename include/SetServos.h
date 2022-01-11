@@ -5,7 +5,7 @@
 
 class SetServos {
     private:
-        Vector3_t* legEndPosition;
+        Vector3_t* angles;
         servoReverse_t servoReverse;
         uint16_t angleToOnTime(int8_t angle, bool reverse);
 

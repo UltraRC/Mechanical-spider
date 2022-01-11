@@ -1,7 +1,6 @@
 #include <Arduino.h>
 #include <math.h>
 #include "InverseKinematics.h"
-#include "Leg.h"
 
 /**
  * Inverse kinematics - https://www.instructables.com/DIY-Arduino-Quadruped-Robot-With-Inverse-Kinematic/
@@ -59,4 +58,11 @@ double calculateBeta(double R){
  **/
 double toDegrees(double angle){
     return (angle*180) / PI;
+}
+
+/**
+ * Returns an angle passed in degrees as radians
+ **/
+double toRadians(double angle) {
+    return (angle*PI) / 180;
 }

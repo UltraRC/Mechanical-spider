@@ -28,9 +28,9 @@ SetServos::SetServos()
 
 }
 
-SetServos::SetServos(Vector3_t* legEndPosition, servoConnection_t servoConnectionConfig, servoReverse_t servoReverse)
+SetServos::SetServos(Vector3_t* angles, servoConnection_t servoConnectionConfig, servoReverse_t servoReverse)
 {
-  this->legEndPosition = legEndPosition;
+  this->angles = angles;
   this->board = servoConnectionConfig.board;
   this->hip_pin = servoConnectionConfig.hip_pin;
   this->thigh_pin = servoConnectionConfig.thigh_pin;
@@ -54,7 +54,7 @@ uint16_t SetServos::angleToOnTime(int8_t angle, bool reverse){
 
 void SetServos::updateServoPositions()
 {
-  board.setPin(hip_pin, angleToOnTime(legEndPosition->x, servoReverse.hipJointIsReversed));
-  board.setPin(thigh_pin, angleToOnTime(legEndPosition->y, servoReverse.thighJointIsReversed));
-  board.setPin(knee_pin, angleToOnTime(legEndPosition->z, servoReverse.kneeJointIsReversed));
+  board.setPin(hip_pin, angleToOnTime(angles->x, servoReverse.hipJointIsReversed));
+  board.setPin(thigh_pin, angleToOnTime(angles->y, servoReverse.thighJointIsReversed));
+  board.setPin(knee_pin, angleToOnTime(angles->z, servoReverse.kneeJointIsReversed));
 }
