@@ -31,6 +31,11 @@ void Leg::update()
     position.z = defaultPosition.z - receiver.getChannel(THR)/10;
 
     angles = calculateAngles(position);
+
+    angles.x += legPosition.offset_angle_hip;
+    angles.y += legPosition.offset_angle_thigh;
+    angles.z += legPosition.offset_angle_knee;
+
     setServos.updateServoPositions();
 }
 

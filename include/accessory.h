@@ -27,12 +27,16 @@ typedef struct {
 
 /**
  * @brief Describes the position of a leg relative to the center of the robot
- * @param angleFromFoward [uint8_t] // Anti-clockwise angle in radians from the foward directions
- * @param radius [uint8_t] distance from center of robot to the hip joint in [mm]
+ * @param angleFromFoward [double] // Anti-clockwise angle in radians from the foward directions
+ * @param radius [double] distance from center of robot to the hip joint in [mm]
+ * @param offset_angle_*** [double] X3 // Adjust the offsets of each joint angle
  */
 typedef struct {
     double angleFromFoward; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
     double radius; // Distance from the global reference frame (center of the robot)
+    double offset_angle_hip;
+    double offset_angle_thigh;
+    double offset_angle_knee;
 } legPosition_t;
 
 /**

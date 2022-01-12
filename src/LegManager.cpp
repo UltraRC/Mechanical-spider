@@ -21,12 +21,14 @@ servoConnection_t legConnection5 = {rightBoard, 3, 4, 5};
 servoConnection_t legConnection6 = {rightBoard, 6, 7, 8};
 
 // Information for the position of each leg
-legPosition_t legPosition1 = {120, RADIUS};
-legPosition_t legPosition2 = {180, RADIUS};
-legPosition_t legPosition3 = {240, RADIUS};
-legPosition_t legPosition4 = {300, RADIUS};
-legPosition_t legPosition5 = {0, RADIUS};
-legPosition_t legPosition6 = {60, RADIUS};
+// {Angle, radius, hip*, thigh*, knee*} *offset angles
+// TODO make sure that offsets deflect joints in the correct direction
+legPosition_t legPosition1 = {120, RADIUS, 0, 0, 0};
+legPosition_t legPosition2 = {180, RADIUS, 0, 0, 0};
+legPosition_t legPosition3 = {240, RADIUS, 0, 0, 0};
+legPosition_t legPosition4 = {300, RADIUS, 0, 0, 0};
+legPosition_t legPosition5 = {0  , RADIUS, 0, 0, 0};
+legPosition_t legPosition6 = {60 , RADIUS, 0, 0, 0};
 
 // Information on the direction of each servo in each leg
 // A state of true means the servo is reversed
