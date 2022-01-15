@@ -3,9 +3,6 @@
 #include "SetServos.h"
 #include "InverseKinematics.h"
 
-//bool Leg::legLegLifted[];
-//SetServos setServos;
-
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver)
 {
     this->servoConnectionConfig = servoConnection;
