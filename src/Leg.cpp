@@ -3,14 +3,20 @@
 #include "SetServos.h"
 #include "InverseKinematics.h"
 
+uint8_t Leg::legCount = 1; // Legs are numbered 1-6
+Leg::gaitPlanning = GaitPlanning(receiver); //  TODO move receiver as static vairable in leg and fix object initilisation
+
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver)
 {
+    legNumber = legCount; // Identifies which leg 1-6 this leg is
     this->servoConnectionConfig = servoConnection;
     this->legPosition = legPosition; // Angle and distance of leg mounting positions
     this->servoReverse = servoReverse;
     this-> receiver = receiver;
     defaultPosition = {80,0,-60};
     setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
+
+    legCount += 1; // Adds one leg to the list
 }
 
 void Leg::update()
@@ -33,6 +39,7 @@ void Leg::update()
     angles.y += legPosition.offset_angle_thigh;
     angles.z += legPosition.offset_angle_knee;
 
+    gaitPlanning.update();
     setServos.updateServoPositions();
 }
 
@@ -58,5 +65,4 @@ void Leg::setPosition(int32_t x, int32_t y, int32_t z)
  * What needs to bee done with this information?
  * - Convert leg position information into joint angle information (inverse kinematics)
  * - Set the position of each of the legs servos to the angle stored
- * - 
  */

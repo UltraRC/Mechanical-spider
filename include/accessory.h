@@ -1,6 +1,8 @@
 #ifndef ACCESSORY_H
 #define ACCESSORY_H
 
+#include "Adafruit_PWMServoDriver.h"
+
 #define SERVO_FREQUENCY 50
 
 typedef struct {
