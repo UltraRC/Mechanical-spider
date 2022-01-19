@@ -13,7 +13,8 @@ GaitPlanning::GaitPlanning(ReceiverInput receiver) {
  * 
  */
 void GaitPlanning::update() {
-    uint64_t delta = esp_timer_get_time() - lastUpdateTime;
+    static uint64_t lastUpdateTime;
+    delta = esp_timer_get_time() - lastUpdateTime;
     if(delta >= 1000000 / UPDATE_FREQUENCY) {
         lastUpdateTime = esp_timer_get_time(); // TODO order of these lines?
         // TODO do update stuff here

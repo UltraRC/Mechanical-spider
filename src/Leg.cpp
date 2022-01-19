@@ -4,7 +4,6 @@
 #include "InverseKinematics.h"
 
 uint8_t Leg::legCount = 1; // Legs are numbered 1-6
-Leg::gaitPlanning = GaitPlanning(receiver); //  TODO move receiver as static vairable in leg and fix object initilisation
 
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver)
 {
@@ -15,7 +14,7 @@ Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReve
     this-> receiver = receiver;
     defaultPosition = {80,0,-60};
     setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
-
+    gaitPlanning = new GaitPlanning(receiver);
     legCount += 1; // Adds one leg to the list
 }
 
@@ -39,7 +38,7 @@ void Leg::update()
     angles.y += legPosition.offset_angle_thigh;
     angles.z += legPosition.offset_angle_knee;
 
-    gaitPlanning.update();
+    gaitPlanning->update();
     setServos.updateServoPositions();
 }
 
