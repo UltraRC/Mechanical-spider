@@ -26,6 +26,7 @@ class GaitPlanning {
     public:
         GaitPlanning(ReceiverInput receiver);
         void update();
+        Vector3_t getPosition();
 
     private:
         void setLegVelocity(Vector3_t velocity);
