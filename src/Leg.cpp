@@ -5,7 +5,7 @@
 
 uint8_t Leg::legCount = 1; // Legs are numbered 1-6
 
-Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse, ReceiverInput receiver)
+Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse)
 {
     legNumber = legCount; // Identifies which leg 1-6 this leg is
     this->servoConnectionConfig = servoConnection;
@@ -14,23 +14,18 @@ Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReve
     this-> receiver = receiver;
     defaultPosition = {80,0,-60};
     setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
-    gaitPlanning = new GaitPlanning(receiver);
+    receiver = new ReceiverInput();
+    gaitPlanning = new GaitPlanning(*receiver);
     legCount += 1; // Adds one leg to the list
 }
 
 void Leg::update()
 {
-    int32_t x = -1*receiver.getChannel(AIL)/10;
-    int32_t y =    receiver.getChannel(ELE)/10;
+    receiver->update();
 
-    double theta = toRadians(legPosition.angleFromFoward);
-
-    int32_t x_prime = x*cos(theta) + y*sin(theta);
-    int32_t y_prime = y*cos(theta) - x*sin(theta);
-
-    position.x = defaultPosition.x - x_prime;
-    position.y = defaultPosition.y - y_prime;
-    position.z = defaultPosition.z - receiver.getChannel(THR)/10;
+    position.x = defaultPosition.x - legVelocity.x;
+    position.y = defaultPosition.y - legVelocity.y;
+    position.z = defaultPosition.z - receiver->getChannel(THR)/10;
 
     angles = calculateAngles(position);
 
@@ -53,6 +48,22 @@ void Leg::setPosition(int32_t x, int32_t y, int32_t z)
     position.x = x;
     position.y = y;
     position.z = z;
+}
+
+
+/**
+ * @brief Transorms the XY vector of body velocity into
+ * an XY vector of leg velocity based on the angle the leg makes with the body
+ * 
+ * // TODO may need to change some signs here
+ */
+void Leg::bodyToLegVelocity()
+{
+    double x = -1*receiver->getChannel(AIL)/10;
+    double y =    receiver->getChannel(ELE)/10;
+    double theta = toRadians(legPosition.angleFromFoward);
+    legVelocity.x = x*cos(theta) + y*sin(theta);
+    legVelocity.y = y*cos(theta) - x*sin(theta);y*cos(theta) - x*sin(theta);
 }
 
 /**
