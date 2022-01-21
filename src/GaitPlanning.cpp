@@ -2,6 +2,7 @@
 #include "GaitPlanning.h"
 
 double GaitPlanning::envelope_radius = 30; // [mm] TODO Later this number should be a function of body velocity
+Vector3_t GaitPlanning::leg_offset = {90,0,-30}; // [RTZ]
 
 /**
  * @brief Construct a new Gait Planning Object
@@ -18,19 +19,15 @@ GaitPlanning::GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLi
     leftNeighbourIsLifted = &legLifted[preceedingLeg];
     rightNeighbourIsLifted = &legLifted[proceedingLeg];
 
-    setDefaultLegPosition();
+    leg_position = {0,0,0}; // [XYZ] ==> Position relative to leg_offset
 }
 
-/**
- * @brief 
- * 
- */
 void GaitPlanning::update() {
     static uint64_t lastUpdateTime;
     deltaTime = esp_timer_get_time() - lastUpdateTime;
     if(deltaTime >= 1000000 / UPDATE_FREQUENCY) {
         lastUpdateTime = esp_timer_get_time(); // TODO order of these lines?
-        // TODO do update stuff here
+        // TODO do stuff here
     }
 }
 
@@ -59,56 +56,13 @@ void GaitPlanning::setBodyVelocity()
 }
 
 /**
- * @brief Transorms the XY vector of body velocity into
- * an XY vector of leg velocity based on the angle the leg makes with the body
- * 
- * // TODO may need to change some signs here
+ * @brief Returns a vector in [RTZ] coordinates
+ * Converts  leg_position from [XYZ] to [RTZ]
+ * then adds it to leg_offset which is already in [RTZ].
+ * Then returns that vector.
+ * @return [Vector3_t] ==> Return vector 
  */
-void GaitPlanning::bodyToLegVelocity()
-{
-    double x = -1*receiver.getChannel(AIL)/10;
-    double y =    receiver.getChannel(ELE)/10;
-    double theta = PI / 180  * legMountingPosition.angleFromFoward; // Convert to radians
-    legVelocity.x = x*cos(theta) + y*sin(theta);
-    legVelocity.y = y*cos(theta) - x*sin(theta);
-}
-
-void GaitPlanning::calculateLegPosition()
-{
-    legPosition = add(DEFAULT_LEG_POSITION, legOffset);
-}
-
-void GaitPlanning::setDefaultLegPosition()
-{
-    double angleFromFront = PI/180 * legMountingPosition.angleFromFoward;
-    DEFAULT_LEG_POSITION = // {tangental, radial, vertical} => From the legs perscpective
-    {
-        DEFAULT_X_POS*cos(angleFromFront) + DEFAULT_Y_POS*sin(angleFromFront),
-        DEFAULT_Y_POS*cos(angleFromFront) - DEFAULT_X_POS*sin(angleFromFront),
-        DEFAULT_Z_POS
-    }; 
-}
-
-Vector3_t GaitPlanning::add(Vector3_t v1, Vector3_t v2)
-{
-    return {v1.x+v2.x, v1.y+v2.y, v1.z+v2.z};
-}
-
 Vector3_t GaitPlanning::getPosition()
 {
-    return legPosition;
+    return add_vector(XYZ_to_RTZ(leg_position, legMountingPosition.leg_mount_angle), leg_offset);
 }
-
-/**
- * Interface (public methods) ==> What information needs to be given and taken from other classes?
- * Stuff other classes can ACCESS / get methods:
- * - set current XYZ set position
- * 
- * Stuff this class needs to know from other classes ==> Constructor arguments / set methods:
- * - Needs to no ITSELF which leg THIS is
- * - Needs to know the state (swing/stance) and (later) position of other legs
- * 
- * Is there anything that is common to all instances of this class? ==> Static members:
- * - Envelope radius
- * - Body velocity ==> Need to convert receiver signals into body velocity
- */

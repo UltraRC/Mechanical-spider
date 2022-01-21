@@ -26,16 +26,21 @@ void Leg::update()
     position.z = defaultPosition.z - receiver->getChannel(THR)/10;
     */
 
-    /* TODO move this to setServos.cpp tbh
+    // TODO move this to setServos.cpp tbh
+    //gaitPlanning->update();
+    position = gaitPlanning->getPosition();
+    Serial.printf("Leg#%u ==> {%f,%f,%f}\n",legNumber, position.x, position.y, position.z);
+    if(legNumber==6) {
+        Serial.printf("-----------------------\n");
+    }
     angles = calculateAngles(position);
 
     angles.x += legPosition.offset_angle_hip;
     angles.y += legPosition.offset_angle_thigh;
     angles.z += legPosition.offset_angle_knee;
-    */
+    
 
     receiver->update();
-    gaitPlanning->update();
     setServos.updateServoPositions();
 }
 

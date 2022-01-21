@@ -29,12 +29,12 @@ typedef struct {
 
 /**
  * @brief Describes the position of a leg relative to the center of the robot
- * @param angleFromFoward [double] // Anti-clockwise angle in radians from the foward directions
+ * @param leg_mount_angle [double] // Anti-clockwise angle in radians from the positive x-axis --->
  * @param radius [double] distance from center of robot to the hip joint in [mm]
  * @param offset_angle_*** [double] X3 // Adjust the offsets of each joint angle
  */
 typedef struct {
-    double angleFromFoward; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
+    double leg_mount_angle; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
     double radius; // Distance from the global reference frame (center of the robot)
     double offset_angle_hip;
     double offset_angle_thigh;
@@ -50,5 +50,8 @@ typedef struct {
     bool thighJointIsReversed;
     bool kneeJointIsReversed;
 } servoReverse_t;
+
+Vector3_t add_vector(Vector3_t vector1, Vector3_t vector2);
+Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi);
 
 #endif // ACCESSORY_H
