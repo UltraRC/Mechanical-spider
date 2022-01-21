@@ -47,8 +47,6 @@ class Leg {
         Vector3_t angles; // [HIP, THIGH, KNEE] // Holds the positions for each joint angle
 
         Vector3_t legVelocity;
-
-        void bodyToLegVelocity();
 };
 
 #endif //LEG_H

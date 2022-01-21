@@ -14,7 +14,7 @@ Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReve
     this->servoReverse = servoReverse;
     setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
     receiver = new ReceiverInput();
-    gaitPlanning = new GaitPlanning(*receiver, legNumber, legLifted);
+    gaitPlanning = new GaitPlanning(*receiver, legNumber, legLifted, legPosition);
     legCount += 1; // Adds one leg to the list
 }
 
@@ -50,22 +50,6 @@ void Leg::setPosition(int32_t x, int32_t y, int32_t z)
     position.x = x;
     position.y = y;
     position.z = z;
-}
-
-
-/**
- * @brief Transorms the XY vector of body velocity into
- * an XY vector of leg velocity based on the angle the leg makes with the body
- * 
- * // TODO may need to change some signs here
- */
-void Leg::bodyToLegVelocity()
-{
-    double x = -1*receiver->getChannel(AIL)/10;
-    double y =    receiver->getChannel(ELE)/10;
-    double theta = toRadians(legPosition.angleFromFoward);
-    legVelocity.x = x*cos(theta) + y*sin(theta);
-    legVelocity.y = y*cos(theta) - x*sin(theta);y*cos(theta) - x*sin(theta);
 }
 
 /**

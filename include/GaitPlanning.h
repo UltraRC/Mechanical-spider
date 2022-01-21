@@ -8,6 +8,10 @@
 //#define REVERSE_VELOCITY_X
 //#define REVERSE_VELOCITY_Y
 
+#define DEFAULT_X_POS 0
+#define DEFAULT_Y_POS 0
+#define DEFAULT_Z_POS 0
+
 // Set the velocities for different stages of the gait cycle
 #define SWING_VELOCITY 100 // [mm/s] TODO this will later be variable depending on body velocity
 #define MAX_BODY_VELOCTY 10 // [mm/s]
@@ -30,28 +34,35 @@ typedef enum {
 } motion_state_t;
 
 class GaitPlanning {
+
+    static double envelope_radius; // Radius of the circle that the leg is working inside
+    static ReceiverInput receiver;
+    static Vector3_t bodyVelocity; // Is based apon receiver inputs
+
     public:
-        GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLifted[6]); // TODO Change 6 to NUM_LEGS
+        GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLifted[6], legPosition_t legMountingPosition); // TODO Change 6 to NUM_LEGS
         void update();
         Vector3_t getPosition();
 
     private:
-        void setLegVelocity(Vector3_t velocity);
-        uint64_t delta;
-        uint8_t legNumber;
+        uint64_t deltaTime; // Ammount of time passed since last tick
 
+        Vector3_t DEFAULT_LEG_POSITION; // In the reference from of the leg. E.g x is the tangent direction y is radial and z is up
+        legPosition_t legMountingPosition;
+        uint8_t legNumber; // Which leg (of six) is THIS one
+        Vector3_t legPosition; // Absolute leg position
+        Vector3_t legOffset;  // Leg position relative to DEFAULT_LEG_POSITION
+        Vector3_t legVelocity;  // [XY] (2D)
         bool* leftNeighbourIsLifted;
         bool* rightNeighbourIsLifted;
-        
-        motion_state_t legState; // 
-        static double envelope_radius; // Radius of the circle that the leg is working inside
-        
-        Vector3_t leg_velocity;  // [XY] (2D)
-        static Vector3_t bodyVelocity; // Is based apon receiver inputs
-        void setBodyVelocity();
-        bool neighbourIsLifted();
 
-        static ReceiverInput receiver;
+        void bodyToLegVelocity();
+        void setLegVelocity(Vector3_t velocity);
+        void setBodyVelocity();
+        void calculateLegPosition(); 
+        bool neighbourIsLifted();
+        void setDefaultLegPosition();
+        Vector3_t add(Vector3_t v1, Vector3_t v2);
 
 };
 
