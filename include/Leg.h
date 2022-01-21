@@ -36,7 +36,7 @@ class Leg {
     private:
         static uint8_t legCount;
         uint8_t legNumber;
-        static bool isLifted[NUM_LEGS];  // Legs need to know if their neighbouring leg is lifted
+        static bool legLifted[NUM_LEGS];  // Legs need to know if their neighbouring leg is lifted
         servoConnection_t servoConnectionConfig;
         legPosition_t legPosition; // Angle from front and radius
         servoReverse_t servoReverse;
