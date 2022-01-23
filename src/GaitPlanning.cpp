@@ -39,7 +39,7 @@ void GaitPlanning::update() {
             break;
 
         case swing:
-            //swingMovementUpdate(); // TODO Needs to be defined
+            swingMovementUpdate();
             break;
         
         default:
@@ -53,8 +53,26 @@ void GaitPlanning::stanceMovementUpdate()
 {
     leg_position.x -= body_velocity.x;
     leg_position.y -= body_velocity.y;
+    leg_position.z = 0;
 
     if(legOutsideEnvelope()) {state = swing;} //TODO there are other conditions to change state e.g Neighbour lifted
+}
+
+/**
+ * @brief 
+ * 
+ */
+void GaitPlanning::swingMovementUpdate()
+{
+    double swing_height = 10; // [mm] ==> The height of the inflection point
+
+    Vector3_t starting_point = {0,0,0};
+    Vector3_t inflection_point = {0,0,leg_offset.z + swing_height};
+    Vector3_t end_point = {0,0,0};
+
+    Vector3_t direction = subtract_vector(inflection_point, leg_position);
+    direction = vector_normalize(direction);
+
 }
 
 /**
