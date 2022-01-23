@@ -52,7 +52,10 @@ typedef struct {
 } servoReverse_t;
 
 Vector3_t add_vector(Vector3_t vector1, Vector3_t vector2);
+Vector3_t subtract_vector(Vector3_t vector1, Vector3_t vector2);
 Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi);
+Vector3_t vector_normalize(Vector3_t v);
+Vector3_t vector_scale(Vector3_t v, double s);
 double vector_norm(Vector3_t v);
 
 #endif // ACCESSORY_H

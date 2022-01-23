@@ -9,6 +9,16 @@ Vector3_t add_vector(Vector3_t v1, Vector3_t v2)
 }
 
 /**
+ * @brief Subtracts the second vector from the first and returns the result
+ */
+Vector3_t subtract_vector(Vector3_t v1, Vector3_t v2)
+{
+    return {v1.x-v2.x, v1.y-v2.y, v1.z-v2.z};
+}
+
+
+
+/**
  * @brief Convert coordinate in XYZ (body coordinates) to 
  * RTZ (Radial, tangental, vertical or XYZ in the leg frame of reference)
  * 
@@ -32,5 +42,27 @@ Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi)
  */
 double vector_norm(Vector3_t v)
 {
-    return  sqrt(v.x*v.x + v.y*v.y + v.y*v.y);
+    return sqrt(v.x*v.x + v.y*v.y + v.y*v.y);
+}
+
+/**
+ * @brief Scales the passed vector v by a scaler s and returns the result
+ * 
+ * @param v [Vector3_t] ==> Vector to be scaled
+ * @param s [double] ==> Scalar
+ * @return [Vector3_t] ==> Scaled vector
+ */
+Vector3_t vector_scale(Vector3_t v, double s)
+{
+    return {s*v.x, s*v.y, s*v.z};
+}
+
+/**
+ * @brief Returns the 2-norm of a vector ||v||_2
+ */
+Vector3_t vector_normalize(Vector3_t v)
+{
+    double norm = vector_norm(v);
+    if(norm == 0) {return {0,0,0};}
+    return vector_scale(v, 1/norm);
 }
