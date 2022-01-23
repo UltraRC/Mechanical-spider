@@ -23,7 +23,7 @@
  */
 class Leg {
 
-    ReceiverInput* receiver;
+    static ReceiverInput* receiver;
     GaitPlanning* gaitPlanning; // Object used to plan how each leg moves
 
     public:

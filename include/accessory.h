@@ -53,5 +53,6 @@ typedef struct {
 
 Vector3_t add_vector(Vector3_t vector1, Vector3_t vector2);
 Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi);
+double vector_norm(Vector3_t v);
 
 #endif // ACCESSORY_H

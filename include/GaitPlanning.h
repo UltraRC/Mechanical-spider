@@ -5,7 +5,7 @@
 #include "ReceiverInput.h"
 
 // Reverse the direction of movement of the robot
-//#define REVERSE_VELOCITY_X
+#define REVERSE_VELOCITY_X
 //#define REVERSE_VELOCITY_Y
 
 // Set the velocities for different stages of the gait cycle
@@ -32,17 +32,17 @@ typedef enum {
 class GaitPlanning {
 
     static double envelope_radius; // Radius of the circle that the leg is working inside
-    static ReceiverInput receiver;
-    static Vector3_t bodyVelocity; // Is based apon receiver inputs
+    static Vector3_t body_velocity; // Is based apon receiver inputs
     static Vector3_t leg_offset; // In the reference from of the leg. E.g x is the radial direction y is tangent and z is up
 
     public:
-        GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLifted[6], legPosition_t legMountingPosition); // TODO Change 6 to NUM_LEGS
+        GaitPlanning(ReceiverInput* receiver, uint8_t legNumber, bool legLifted[6], legPosition_t legMountingPosition); // TODO Change 6 to NUM_LEGS
         void update();
         Vector3_t getPosition();
 
     private:
         uint64_t deltaTime; // Ammount of time passed since last tick
+        ReceiverInput* receiver;
 
         legPosition_t legMountingPosition;
         uint8_t legNumber; // Which leg (of six) is THIS one
@@ -50,9 +50,15 @@ class GaitPlanning {
         Vector3_t legVelocity;  // [XY] (2D)
         bool* leftNeighbourIsLifted;
         bool* rightNeighbourIsLifted;
+        
+        motion_state_t state;
 
         void setBodyVelocity();
         bool neighbourIsLifted();
+
+        void stanceMovementUpdate();
+        void swingMovementUpdate();
+        bool legOutsideEnvelope();
 };
 
 #endif

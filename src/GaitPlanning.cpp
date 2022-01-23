@@ -2,13 +2,14 @@
 #include "GaitPlanning.h"
 
 double GaitPlanning::envelope_radius = 30; // [mm] TODO Later this number should be a function of body velocity
-Vector3_t GaitPlanning::leg_offset = {90,0,-30}; // [RTZ]
+Vector3_t GaitPlanning::leg_offset = {90,0,-50}; // [RTZ]
+Vector3_t GaitPlanning::body_velocity = {0,0,0};
 
 /**
  * @brief Construct a new Gait Planning Object
  * 
  */
-GaitPlanning::GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLifted[6], legPosition_t legMountingPosition) { // TODO Change 6 to NUM_LEGS
+GaitPlanning::GaitPlanning(ReceiverInput* receiver, uint8_t legNumber, bool legLifted[6], legPosition_t legMountingPosition) { // TODO Change 6 to NUM_LEGS
     this->receiver = receiver;
     this->legNumber = legNumber;
     this->legMountingPosition = legMountingPosition;
@@ -19,7 +20,8 @@ GaitPlanning::GaitPlanning(ReceiverInput receiver, uint8_t legNumber, bool legLi
     leftNeighbourIsLifted = &legLifted[preceedingLeg];
     rightNeighbourIsLifted = &legLifted[proceedingLeg];
 
-    leg_position = {0,0,0}; // [XYZ] ==> Position relative to leg_offset
+    leg_position = {0,0,0}; // [XYZ] Initilize position ==> Position relative to leg_offset
+    state = stance;
 }
 
 void GaitPlanning::update() {
@@ -27,8 +29,32 @@ void GaitPlanning::update() {
     deltaTime = esp_timer_get_time() - lastUpdateTime;
     if(deltaTime >= 1000000 / UPDATE_FREQUENCY) {
         lastUpdateTime = esp_timer_get_time(); // TODO order of these lines?
-        // TODO do stuff here
+        
+        setBodyVelocity();
+
+        switch (state)
+        {
+        case stance:
+            stanceMovementUpdate();
+            break;
+
+        case swing:
+            //swingMovementUpdate(); // TODO Needs to be defined
+            break;
+        
+        default:
+            break;
+        }
+
     }
+}
+
+void GaitPlanning::stanceMovementUpdate()
+{
+    leg_position.x -= body_velocity.x;
+    leg_position.y -= body_velocity.y;
+
+    if(legOutsideEnvelope()) {state = swing;} //TODO there are other conditions to change state e.g Neighbour lifted
 }
 
 /**
@@ -39,19 +65,24 @@ bool GaitPlanning::neighbourIsLifted()
     return *leftNeighbourIsLifted || *rightNeighbourIsLifted;
 }
 
+bool GaitPlanning::legOutsideEnvelope()
+{
+    return vector_norm(leg_position) >= envelope_radius;
+}
+
 /**
  * Body velocity XY 2D vector [mm/s] based on the RC
  * receiver input
  */
 void GaitPlanning::setBodyVelocity()
 {
-    bodyVelocity.x = receiver.getChannel(AIL) * MAX_BODY_VELOCTY / 1000;
-    bodyVelocity.y = receiver.getChannel(ELE) * MAX_BODY_VELOCTY / 1000;
+    body_velocity.x = receiver->getChannel(AIL) * MAX_BODY_VELOCTY / 1000; // TODO converting integerround off error?
+    body_velocity.y = receiver->getChannel(ELE) * MAX_BODY_VELOCTY / 1000;
     #ifdef REVERSE_VELOCITY_X
-    bodyVelocity.x *= -1;
+    body_velocity.x *= -1;
     #endif
     #ifdef REVERSE_VELOCITY_Y
-    bodyVelocity.y *= -1;
+    body_velocity.y *= -1;
     #endif
 }
 

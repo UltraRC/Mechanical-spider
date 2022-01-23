@@ -26,3 +26,11 @@ Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi)
     };
     return return_vector;
 }
+
+/**
+ * @brief Returns the 2-norm of a vector ||v||_2
+ */
+double vector_norm(Vector3_t v)
+{
+    return  sqrt(v.x*v.x + v.y*v.y + v.y*v.y);
+}

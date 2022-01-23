@@ -2,9 +2,11 @@
 #include "Leg.h"
 #include "SetServos.h"
 #include "InverseKinematics.h"
+#include "GaitPlanning.h"
 
 uint8_t Leg::legCount = 1; // Legs are numbered 1-6
 bool Leg::legLifted[NUM_LEGS];
+ReceiverInput* Leg::receiver = new ReceiverInput();
 
 Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReverse_t servoReverse)
 {
@@ -13,8 +15,7 @@ Leg::Leg(servoConnection_t servoConnection, legPosition_t legPosition, servoReve
     this->legPosition = legPosition; // Angle and distance of leg mounting positions
     this->servoReverse = servoReverse;
     setServos = SetServos(&angles, servoConnectionConfig, servoReverse);
-    receiver = new ReceiverInput();
-    gaitPlanning = new GaitPlanning(*receiver, legNumber, legLifted, legPosition);
+    gaitPlanning = new GaitPlanning(receiver, legNumber, legLifted, legPosition);
     legCount += 1; // Adds one leg to the list
 }
 
@@ -27,11 +28,11 @@ void Leg::update()
     */
 
     // TODO move this to setServos.cpp tbh
-    //gaitPlanning->update();
+    gaitPlanning->update();
     position = gaitPlanning->getPosition();
-    Serial.printf("Leg#%u ==> {%f,%f,%f}\n",legNumber, position.x, position.y, position.z);
+    //Serial.printf("Leg#%u ==> {%f,%f,%f}\n",legNumber, position.x, position.y, position.z);
     if(legNumber==6) {
-        Serial.printf("-----------------------\n");
+        //Serial.printf("-----------------------\n");
     }
     angles = calculateAngles(position);
 
