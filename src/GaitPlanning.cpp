@@ -51,11 +51,26 @@ void GaitPlanning::update() {
 
 void GaitPlanning::stanceMovementUpdate()
 {
-    leg_position.x -= body_velocity.x;
-    leg_position.y -= body_velocity.y;
+    leg_position.x -= body_velocity.x*deltaTime; // TODO delta time may be very small
+    leg_position.y -= body_velocity.y*deltaTime;
     leg_position.z = 0;
 
-    if(legOutsideEnvelope()) {state = swing;} //TODO there are other conditions to change state e.g Neighbour lifted
+    if(legOutsideEnvelope() && neighbourIsLifted()) { //TODO there are other conditions to change state e.g Neighbour lifted
+        calculateSwingParameters();
+        state = swing;
+    }
+}
+
+/**
+ * @brief Calculates the 3D position to swing to
+ * 
+ */
+void GaitPlanning::calculateSwingParameters()
+{
+    // TODO if body_velocity < *x* then move to {0,0,0}
+    target_swing_position = vector_normalize(body_velocity);
+    target_swing_position = vector_scale(target_swing_position, envelope_radius);
+    leg_position.z = 20; // [mm] // TODO z currently just jumps to 20 mm and back down like a square wave
 }
 
 /**
@@ -64,15 +79,21 @@ void GaitPlanning::stanceMovementUpdate()
  */
 void GaitPlanning::swingMovementUpdate()
 {
-    double swing_height = 10; // [mm] ==> The height of the inflection point
+    Vector3_t displacement = {0,0,0}; // Init
 
-    Vector3_t starting_point = {0,0,0};
-    Vector3_t inflection_point = {0,0,leg_offset.z + swing_height};
-    Vector3_t end_point = {0,0,0};
+    displacement.x = target_swing_position.x - leg_position.x; // Find direction to move in
+    displacement.y = target_swing_position.y - leg_position.y;
 
-    Vector3_t direction = subtract_vector(inflection_point, leg_position);
-    direction = vector_normalize(direction);
+    displacement = vector_normalize(displacement); // Normalize direction ==> ||v||_2 = 1
+    displacement = vector_scale(displacement, SWING_VELOCITY * deltaTime); // Scale by a distance/time * time value ==> step distance
 
+    if(vector_norm(displacement) > vector_norm(subtract_vector(leg_position, target_swing_position))) { // If step size is larger than distance to set point, move straight to the setpoint and change to stance
+        leg_position = target_swing_position;
+        state = stance;
+        return;
+    }
+
+    leg_position = add_vector(leg_position, displacement); // Move leg_position by one unit of distance in the direction of displacement
 }
 
 /**
@@ -85,7 +106,7 @@ bool GaitPlanning::neighbourIsLifted()
 
 bool GaitPlanning::legOutsideEnvelope()
 {
-    return vector_norm(leg_position) >= envelope_radius;
+    return vector_norm(leg_position) > envelope_radius + HYSTERESIS_ENVELOPE_RADIUS;
 }
 
 /**

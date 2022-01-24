@@ -8,8 +8,10 @@
 #define REVERSE_VELOCITY_X
 //#define REVERSE_VELOCITY_Y
 
+#define HYSTERESIS_ENVELOPE_RADIUS 0 // TODO Set this to avoid leg from swinging as soon as it lands
+
 // Set the velocities for different stages of the gait cycle
-#define SWING_VELOCITY 100 // [mm/s] TODO this will later be variable depending on body velocity
+#define SWING_VELOCITY 10 // [mm/s] TODO this will later be variable depending on body velocity
 #define MAX_BODY_VELOCTY 10 // [mm/s]
 
 #define UPDATE_FREQUENCY 100 // [Hz] TODO pick a better number for this
@@ -52,6 +54,8 @@ class GaitPlanning {
         bool* rightNeighbourIsLifted;
         
         motion_state_t state;
+        Vector3_t target_swing_position;
+        void calculateSwingParameters();
 
         void setBodyVelocity();
         bool neighbourIsLifted();
