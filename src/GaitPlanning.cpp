@@ -1,8 +1,8 @@
 #include <Arduino.h>
 #include "GaitPlanning.h"
 
-double GaitPlanning::envelope_radius = 40; // [mm] TODO Later this number should be a function of body velocity
-Vector3_t GaitPlanning::leg_offset = {90,0,-50}; // [RTZ]
+double GaitPlanning::envelope_radius = 26; // [mm] TODO Later this number should be a function of body velocity
+Vector3_t GaitPlanning::leg_offset = {STANCE_RADIUS, 0, STANCE_Z_OFFSET}; // [RTZ]
 Vector3_t GaitPlanning::body_velocity = {0,0,0};
 
 /**
@@ -14,8 +14,8 @@ GaitPlanning::GaitPlanning(ReceiverInput* receiver, uint8_t legNumber, bool legL
     this->legNumber = legNumber;
     this->legMountingPosition = legMountingPosition;
 
-    static uint8_t preceedingLeg = legNumber == 1 ? 6 : legNumber - 1; // Circular array inde ...4,5,6,1,2,3,4,5...
-    static uint8_t proceedingLeg = legNumber == 1 ? 6 : legNumber + 1; // TODO Change 6 to NUM_LEGS
+    uint8_t preceedingLeg = legNumber == 1 ? 6 : legNumber - 1; // Circular array inde ...4,5,6,1,2,3,4,5...
+    uint8_t proceedingLeg = legNumber == 6 ? 1 : legNumber + 1; // TODO Change 6 to NUM_LEGS
 
     leftNeighbourIsLifted = &legLifted[preceedingLeg-1]; // TODO check indicies
     rightNeighbourIsLifted = &legLifted[proceedingLeg-1];
@@ -28,9 +28,9 @@ GaitPlanning::GaitPlanning(ReceiverInput* receiver, uint8_t legNumber, bool legL
 void GaitPlanning::update() {
     static uint64_t lastUpdateTime;
     deltaTime = esp_timer_get_time() - lastUpdateTime;
-    if(deltaTime >= 1000000 / UPDATE_FREQUENCY) {
-        lastUpdateTime = esp_timer_get_time(); // TODO order of these lines?
-        //Serial.printf("Leg#%u, lifted:%s\n", legNumber, *lifted ? "T" : "F");
+    dt = deltaTime / 1000000.0;
+    if(deltaTime >= 1000000.0 / UPDATE_FREQUENCY) {
+        lastUpdateTime = esp_timer_get_time(); // TODO order of these lines? esp_timer_get_time()
         setBodyVelocity();
 
         switch (state)
@@ -73,7 +73,6 @@ void GaitPlanning::calculateSwingParameters()
     // TODO if body_velocity < *x* then move to {0,0,0}
     target_swing_position = vector_normalize(body_velocity);
     target_swing_position = vector_scale(target_swing_position, envelope_radius);
-    leg_position.z = 35; // [mm] // TODO z currently just jumps to 20 mm and back down like a square wave
 }
 
 /**
@@ -97,7 +96,10 @@ void GaitPlanning::swingMovementUpdate()
         return;
     }
 
-    leg_position = add_vector(leg_position, displacement); // Move leg_position by one unit of distance in the direction of displacement
+    Vector3_t setVector = add_vector(leg_position, displacement); // Move leg_position by one unit of distance in the direction of displacement
+    setVector.z = 23; // [mm] // TODO z currently just jumps to 15 mm and back down like a square wave
+
+    leg_position = setVector;
 }
 
 /**
@@ -119,8 +121,9 @@ bool GaitPlanning::legOutsideEnvelope()
  */
 void GaitPlanning::setBodyVelocity()
 {
-    body_velocity.x = receiver->getChannel(AIL) * MAX_BODY_VELOCTY / 1000; // TODO converting integerround off error?
-    body_velocity.y = receiver->getChannel(ELE) * MAX_BODY_VELOCTY / 1000;
+    body_velocity.x = receiver->getChannel(AIL) * MAX_BODY_VELOCTY / 1000.0; // TODO converting integerround off error?
+    body_velocity.y = receiver->getChannel(ELE) * MAX_BODY_VELOCTY / 1000.0;
+    body_velocity.z = receiver->getChannel(RUD) * MAX_BODY_VELOCTY / 1000.0; // Yaw
     #ifdef REVERSE_VELOCITY_X
     body_velocity.x *= -1;
     #endif

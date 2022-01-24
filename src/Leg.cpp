@@ -28,6 +28,7 @@ void Leg::update()
     */
 
     // TODO move this to setServos.cpp tbh
+    receiver->update();
     gaitPlanning->update();
     position = gaitPlanning->getPosition();
     //Serial.printf("Leg#%u ==> {%f,%f,%f}\n",legNumber, position.x, position.y, position.z);
@@ -36,12 +37,10 @@ void Leg::update()
     }
     angles = calculateAngles(position);
 
-    angles.x += legPosition.offset_angle_hip;
+    angles.x += legPosition.offset_angle_hip; // TODO use add_vector
     angles.y += legPosition.offset_angle_thigh;
     angles.z += legPosition.offset_angle_knee;
-    
 
-    receiver->update();
     setServos.updateServoPositions();
 }
 
