@@ -1,6 +1,8 @@
 #ifndef ACCESSORY_H
 #define ACCESSORY_H
 
+#include "Adafruit_PWMServoDriver.h"
+
 #define SERVO_FREQUENCY 50
 
 typedef struct {
@@ -27,12 +29,12 @@ typedef struct {
 
 /**
  * @brief Describes the position of a leg relative to the center of the robot
- * @param angleFromFoward [double] // Anti-clockwise angle in radians from the foward directions
+ * @param leg_mount_angle [double] // Anti-clockwise angle in radians from the positive x-axis --->
  * @param radius [double] distance from center of robot to the hip joint in [mm]
  * @param offset_angle_*** [double] X3 // Adjust the offsets of each joint angle
  */
 typedef struct {
-    double angleFromFoward; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
+    double leg_mount_angle; // Angular position from the right direction // TODO add direction (clockwise/anticlockwise)
     double radius; // Distance from the global reference frame (center of the robot)
     double offset_angle_hip;
     double offset_angle_thigh;
@@ -48,5 +50,12 @@ typedef struct {
     bool thighJointIsReversed;
     bool kneeJointIsReversed;
 } servoReverse_t;
+
+Vector3_t add_vector(Vector3_t vector1, Vector3_t vector2);
+Vector3_t subtract_vector(Vector3_t vector1, Vector3_t vector2);
+Vector3_t XYZ_to_RTZ(Vector3_t vector, double phi);
+Vector3_t vector_normalize(Vector3_t v);
+Vector3_t vector_scale(Vector3_t v, double s);
+double vector_norm(Vector3_t v);
 
 #endif // ACCESSORY_H

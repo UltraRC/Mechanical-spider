@@ -8,8 +8,6 @@
 Adafruit_PWMServoDriver leftBoard = Adafruit_PWMServoDriver(LEFT_BOARD_ADDRESS);
 Adafruit_PWMServoDriver rightBoard = Adafruit_PWMServoDriver(RIGHT_BOARD_ADDRESS);
 
-ReceiverInput receiver = ReceiverInput();
-
 // ----------------- Construct a group of legs with their associated data -----------------
 
 // Information for the connection of each leg
@@ -41,12 +39,12 @@ servoReverse_t servoReverse5 = {false, false, true };
 servoReverse_t servoReverse6 = {false, false, true };
 
 Leg legs[NUM_LEGS] = {
-    Leg(legConnection1, legPosition1, servoReverse1, receiver),
-    Leg(legConnection2, legPosition2, servoReverse2, receiver),
-    Leg(legConnection3, legPosition3, servoReverse3, receiver),
-    Leg(legConnection4, legPosition4, servoReverse4, receiver),
-    Leg(legConnection5, legPosition5, servoReverse5, receiver),
-    Leg(legConnection6, legPosition6, servoReverse6, receiver)
+    Leg(legConnection1, legPosition1, servoReverse1),
+    Leg(legConnection2, legPosition2, servoReverse2),
+    Leg(legConnection3, legPosition3, servoReverse3),
+    Leg(legConnection4, legPosition4, servoReverse4),
+    Leg(legConnection5, legPosition5, servoReverse5),
+    Leg(legConnection6, legPosition6, servoReverse6)
 };
 
 // ----------------- ----------------- ----------------- -----------------v
@@ -70,10 +68,7 @@ void initServoControllers()
  */
 void updateLegs()
 {
-    receiver.update();
     for(size_t i=0; i<NUM_LEGS; i++) {
-        legs[i].setPosition(receiver.getChannel(AIL)/20,receiver.getChannel(ELE)/5,receiver.getChannel(THR)/5);
-        //legs[i].setPosition(0,0,0);
         legs[i].update();
     }
 }

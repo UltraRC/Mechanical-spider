@@ -28,6 +28,9 @@ void ReceiverInput::update()
   copyBuffer();
 }
 
+/**
+ * @brief Returns channel value between -1000 and 1000 centered on 0
+ */
 int32_t ReceiverInput::getChannel(Channel_t channel)
 {
   return pulsewidthNormalize(channel);

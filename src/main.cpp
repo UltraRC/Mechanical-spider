@@ -7,16 +7,11 @@ uint64_t lastTime = 0;
 
 void setup()
 {
+    //Serial.begin(9600);
     initServoControllers();
 }
 
 void loop()
 {
-    /*
-    uint64_t delta = esp_timer_get_time() - lastTime;
-    if(delta >= 1000000 / UPDATE_FREQ) {
-        lastTime = esp_timer_get_time();
-    }
-    */
     updateLegs();
 }
