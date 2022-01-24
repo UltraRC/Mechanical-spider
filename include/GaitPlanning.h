@@ -52,6 +52,7 @@ class GaitPlanning {
         Vector3_t legVelocity;  // [XY] (2D)
         bool* leftNeighbourIsLifted;
         bool* rightNeighbourIsLifted;
+        bool* lifted;
         
         motion_state_t state;
         Vector3_t target_swing_position;

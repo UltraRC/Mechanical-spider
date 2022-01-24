@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "GaitPlanning.h"
 
-double GaitPlanning::envelope_radius = 30; // [mm] TODO Later this number should be a function of body velocity
+double GaitPlanning::envelope_radius = 40; // [mm] TODO Later this number should be a function of body velocity
 Vector3_t GaitPlanning::leg_offset = {90,0,-50}; // [RTZ]
 Vector3_t GaitPlanning::body_velocity = {0,0,0};
 
@@ -15,10 +15,11 @@ GaitPlanning::GaitPlanning(ReceiverInput* receiver, uint8_t legNumber, bool legL
     this->legMountingPosition = legMountingPosition;
 
     static uint8_t preceedingLeg = legNumber == 1 ? 6 : legNumber - 1; // Circular array inde ...4,5,6,1,2,3,4,5...
-    static uint8_t proceedingLeg = legNumber == 6 ? 1 : legNumber + 1; // TODO Change 6 to NUM_LEGS
+    static uint8_t proceedingLeg = legNumber == 1 ? 6 : legNumber + 1; // TODO Change 6 to NUM_LEGS
 
-    leftNeighbourIsLifted = &legLifted[preceedingLeg];
-    rightNeighbourIsLifted = &legLifted[proceedingLeg];
+    leftNeighbourIsLifted = &legLifted[preceedingLeg-1]; // TODO check indicies
+    rightNeighbourIsLifted = &legLifted[proceedingLeg-1];
+    lifted = &legLifted[legNumber-1];
 
     leg_position = {0,0,0}; // [XYZ] Initilize position ==> Position relative to leg_offset
     state = stance;
@@ -29,7 +30,7 @@ void GaitPlanning::update() {
     deltaTime = esp_timer_get_time() - lastUpdateTime;
     if(deltaTime >= 1000000 / UPDATE_FREQUENCY) {
         lastUpdateTime = esp_timer_get_time(); // TODO order of these lines?
-        
+        //Serial.printf("Leg#%u, lifted:%s\n", legNumber, *lifted ? "T" : "F");
         setBodyVelocity();
 
         switch (state)
@@ -43,6 +44,7 @@ void GaitPlanning::update() {
             break;
         
         default:
+            state = stance;
             break;
         }
 
@@ -51,13 +53,14 @@ void GaitPlanning::update() {
 
 void GaitPlanning::stanceMovementUpdate()
 {
-    leg_position.x -= body_velocity.x*deltaTime; // TODO delta time may be very small
-    leg_position.y -= body_velocity.y*deltaTime;
+    leg_position.x -= body_velocity.x; // TODO delta time may be very small
+    leg_position.y -= body_velocity.y;
     leg_position.z = 0;
 
-    if(legOutsideEnvelope() && neighbourIsLifted()) { //TODO there are other conditions to change state e.g Neighbour lifted
+    if(legOutsideEnvelope() && !neighbourIsLifted()) { //TODO there are other conditions to change state e.g Neighbour lifted
         calculateSwingParameters();
         state = swing;
+        *lifted = true;
     }
 }
 
@@ -70,7 +73,7 @@ void GaitPlanning::calculateSwingParameters()
     // TODO if body_velocity < *x* then move to {0,0,0}
     target_swing_position = vector_normalize(body_velocity);
     target_swing_position = vector_scale(target_swing_position, envelope_radius);
-    leg_position.z = 20; // [mm] // TODO z currently just jumps to 20 mm and back down like a square wave
+    leg_position.z = 35; // [mm] // TODO z currently just jumps to 20 mm and back down like a square wave
 }
 
 /**
@@ -85,11 +88,12 @@ void GaitPlanning::swingMovementUpdate()
     displacement.y = target_swing_position.y - leg_position.y;
 
     displacement = vector_normalize(displacement); // Normalize direction ==> ||v||_2 = 1
-    displacement = vector_scale(displacement, SWING_VELOCITY * deltaTime); // Scale by a distance/time * time value ==> step distance
+    displacement = vector_scale(displacement, SWING_VELOCITY); // TODO *deltaTime Scale by a distance/time * time value ==> step distance
 
     if(vector_norm(displacement) > vector_norm(subtract_vector(leg_position, target_swing_position))) { // If step size is larger than distance to set point, move straight to the setpoint and change to stance
         leg_position = target_swing_position;
         state = stance;
+        *lifted = false;
         return;
     }
 
@@ -101,7 +105,7 @@ void GaitPlanning::swingMovementUpdate()
  */
 bool GaitPlanning::neighbourIsLifted()
 {
-    return *leftNeighbourIsLifted || *rightNeighbourIsLifted;
+    return (*leftNeighbourIsLifted || *rightNeighbourIsLifted);
 }
 
 bool GaitPlanning::legOutsideEnvelope()
