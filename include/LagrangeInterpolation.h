@@ -6,6 +6,7 @@
 class Lagrange_5pnt {
     public:
         Lagrange_5pnt();
+        double get_z_value(double t);
 
     private:
         double t[5]; // Parameter L(t) where t is the distance between position and setpoint sqrt(x^2 + y^2)
