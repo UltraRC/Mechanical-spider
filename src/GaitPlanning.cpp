@@ -73,6 +73,10 @@ void GaitPlanning::calculateSwingParameters()
     // TODO if body_velocity < *x* then move to {0,0,0}
     target_swing_position = vector_normalize(body_velocity);
     target_swing_position = vector_scale(target_swing_position, envelope_radius);
+
+    double distance_to_setpoint = vector_norm(subtract_vector(target_swing_position, leg_position));
+
+    lagrange.set_lagrange_parameters(STEP_HEIGHT, distance_to_setpoint);
 }
 
 /**
@@ -81,7 +85,8 @@ void GaitPlanning::calculateSwingParameters()
  */
 void GaitPlanning::swingMovementUpdate()
 {
-    Vector3_t displacement = {0,0,0}; // Init
+    Vector3_t displacement = {0,0,0}; // Vector that points in the direction of target_position with size velocity*dt
+    double distance_to_setpoint = vector_norm(subtract_vector(target_swing_position, leg_position));
 
     displacement.x = target_swing_position.x - leg_position.x; // Find direction to move in
     displacement.y = target_swing_position.y - leg_position.y;
@@ -89,7 +94,7 @@ void GaitPlanning::swingMovementUpdate()
     displacement = vector_normalize(displacement); // Normalize direction ==> ||v||_2 = 1
     displacement = vector_scale(displacement, SWING_VELOCITY); // TODO *deltaTime Scale by a distance/time * time value ==> step distance
 
-    if(vector_norm(displacement) > vector_norm(subtract_vector(leg_position, target_swing_position))) { // If step size is larger than distance to set point, move straight to the setpoint and change to stance
+    if(vector_norm(displacement) >= distance_to_setpoint) { // If step size is larger than distance to set point, move straight to the setpoint and change to stance
         leg_position = target_swing_position;
         state = stance;
         *lifted = false;
@@ -97,7 +102,8 @@ void GaitPlanning::swingMovementUpdate()
     }
 
     Vector3_t setVector = add_vector(leg_position, displacement); // Move leg_position by one unit of distance in the direction of displacement
-    setVector.z = 23; // [mm] // TODO z currently just jumps to 15 mm and back down like a square wave
+    //setVector.z = STEP_HEIGHT; // [mm] // Old method
+    setVector.z = lagrange.get_z_value(distance_to_setpoint); // New method
 
     leg_position = setVector;
 }

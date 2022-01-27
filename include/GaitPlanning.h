@@ -3,6 +3,7 @@
 
 #include "accessory.h"
 #include "ReceiverInput.h"
+#include "LagrangeInterpolation.h"
 
 // Reverse the direction of movement of the robot
 #define REVERSE_VELOCITY_X
@@ -16,9 +17,10 @@
 
 #define UPDATE_FREQUENCY 100.0 // [Hz] TODO pick a better number for this
 
-
 #define STANCE_RADIUS 95 // [mm] ==> Radial distance from hip joint
 #define STANCE_Z_OFFSET -60 // [mm] ==> Z-Offset from hip joint
+
+#define STEP_HEIGHT 23 // [mm] ==> The max height that the leg reaches during swing state
 
 /**
  * @brief The leg can be in one of three states not_moving, stance (on the ground propelling the robot)
@@ -46,6 +48,7 @@ class GaitPlanning {
         uint64_t deltaTime; // [uS] Ammount of time passed since last tick
         double dt; // [S]
         ReceiverInput* receiver;
+        Lagrange_5pnt lagrange;
 
         legPosition_t legMountingPosition;
         uint8_t legNumber; // Which leg (of six) is THIS one
