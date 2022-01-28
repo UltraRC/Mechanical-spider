@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include "GaitPlanning.h"
 
-double GaitPlanning::envelope_radius = 26; // [mm] TODO Later this number should be a function of body velocity
+double GaitPlanning::envelope_radius = 23; // [mm] TODO Later this number should be a function of body velocity
 Vector3_t GaitPlanning::leg_offset = {STANCE_RADIUS, 0, STANCE_Z_OFFSET}; // [RTZ]
 Vector3_t GaitPlanning::body_velocity = {0,0,0};
 
@@ -104,7 +104,7 @@ void GaitPlanning::swingMovementUpdate()
     Vector3_t setVector = add_vector(leg_position, displacement); // Move leg_position by one unit of distance in the direction of displacement
     //setVector.z = STEP_HEIGHT; // [mm] // Old method
     setVector.z = lagrange.get_z_value(distance_to_setpoint); // New method
-
+    //Serial.printf("Z-value = %f\n", setVector.z);
     leg_position = setVector;
 }
 

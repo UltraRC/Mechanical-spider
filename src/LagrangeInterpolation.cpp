@@ -4,7 +4,7 @@
  * @brief This class is for creating a smooth Z coordinate path for
  * the leg to follow during its "swing phase". It is based on a Lagrange interpolation
  * method to create a path between five points.
- * - Graphical demonstration ==> https://www.desmos.com/calculator/t7gsylwjal
+ * - Graphical demonstration ==> https://www.desmos.com/calculator/od8opuyp1k
  * - Mathmatical reference ==> https://brilliant.org/wiki/lagrange-interpolation/#:~:text=The%20Lagrange%20interpolation%20formula%20is,point%20(1%2C3).
  * The method of finding a Z leg path that this class is replacing is shown graphically
  * here ==> https://www.desmos.com/calculator/dqawljke0c
@@ -59,11 +59,11 @@ void Lagrange_5pnt::set_lagrange_parameters(double max_z, double setpoint_distan
     z_pnt[4] = z_pnt[0];
 
     // From desmos example, each param[] component is y_* / denominator
-    param[0] = z_pnt[0] / (t_pnt[0]-t_pnt[1])*(t_pnt[0]-t_pnt[2])*(t_pnt[0]-t_pnt[3])*(t_pnt[0]-t_pnt[4]);
-    param[1] = z_pnt[1] / (t_pnt[1]-t_pnt[0])*(t_pnt[1]-t_pnt[2])*(t_pnt[1]-t_pnt[3])*(t_pnt[1]-t_pnt[4]);    
-    param[2] = z_pnt[2] / (t_pnt[2]-t_pnt[0])*(t_pnt[2]-t_pnt[1])*(t_pnt[2]-t_pnt[3])*(t_pnt[2]-t_pnt[4]);    
-    param[3] = z_pnt[3] / (t_pnt[3]-t_pnt[0])*(t_pnt[3]-t_pnt[1])*(t_pnt[3]-t_pnt[2])*(t_pnt[3]-t_pnt[4]);
-    param[4] = z_pnt[4] / (t_pnt[4]-t_pnt[0])*(t_pnt[4]-t_pnt[1])*(t_pnt[4]-t_pnt[2])*(t_pnt[4]-t_pnt[3]);
+    param[0] = z_pnt[0] / ((t_pnt[0]-t_pnt[1])*(t_pnt[0]-t_pnt[2])*(t_pnt[0]-t_pnt[3])*(t_pnt[0]-t_pnt[4]));
+    param[1] = z_pnt[1] / ((t_pnt[1]-t_pnt[0])*(t_pnt[1]-t_pnt[2])*(t_pnt[1]-t_pnt[3])*(t_pnt[1]-t_pnt[4]));
+    param[2] = z_pnt[2] / ((t_pnt[2]-t_pnt[0])*(t_pnt[2]-t_pnt[1])*(t_pnt[2]-t_pnt[3])*(t_pnt[2]-t_pnt[4]));
+    param[3] = z_pnt[3] / ((t_pnt[3]-t_pnt[0])*(t_pnt[3]-t_pnt[1])*(t_pnt[3]-t_pnt[2])*(t_pnt[3]-t_pnt[4]));
+    param[4] = z_pnt[4] / ((t_pnt[4]-t_pnt[0])*(t_pnt[4]-t_pnt[1])*(t_pnt[4]-t_pnt[2])*(t_pnt[4]-t_pnt[3]));
 }
 
 /**
