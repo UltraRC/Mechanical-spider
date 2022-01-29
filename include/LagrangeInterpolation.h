@@ -12,7 +12,7 @@
  * - A larger BETA increases the height of intermediate control point 
  */
 #define FUNCTION_SHAPE_ALPHA 0.7; // MUST BE IN RANGE!! [0.5, 0.77]
-#define FUNCTION_SHAPE_BETA  0.6; // MUST BE IN RANGE!! [0.25, 0.5]
+#define FUNCTION_SHAPE_BETA  0.35; // MUST BE IN RANGE!! [0.25, 0.5]
 
 /**
  * @brief Usage:

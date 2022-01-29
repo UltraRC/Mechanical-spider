@@ -74,6 +74,9 @@ void GaitPlanning::calculateSwingParameters()
     target_swing_position = vector_normalize(body_velocity);
     target_swing_position = vector_scale(target_swing_position, envelope_radius);
 
+    target_swing_position.x += random(5);
+    target_swing_position.y += random(5);target_swing_position.x += random(5);
+
     double distance_to_setpoint = vector_norm(subtract_vector(target_swing_position, leg_position));
 
     lagrange.set_lagrange_parameters(STEP_HEIGHT, distance_to_setpoint);

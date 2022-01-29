@@ -12,15 +12,15 @@
 #define HYSTERESIS_ENVELOPE_RADIUS 3 // TODO Set this to avoid leg from swinging as soon as it lands
 
 // Set the velocities for different stages of the gait cycle
-#define SWING_VELOCITY 9.0 // [mm/s] TODO this will later be variable depending on body velocity
+#define SWING_VELOCITY 13.0 // [mm/s] TODO this will later be variable depending on body velocity
 #define MAX_BODY_VELOCTY 50.0 // [mm/s]
 
 #define UPDATE_FREQUENCY 100.0 // [Hz] TODO pick a better number for this
 
 #define STANCE_RADIUS 95 // [mm] ==> Radial distance from hip joint
-#define STANCE_Z_OFFSET -60 // [mm] ==> Z-Offset from hip joint
+#define STANCE_Z_OFFSET -65 // [mm] ==> Z-Offset from hip joint
 
-#define STEP_HEIGHT 20 // [mm] ==> The max height that the leg reaches during swing state
+#define STEP_HEIGHT 25 // [mm] ==> The max height that the leg reaches during swing state
 
 /**
  * @brief The leg can be in one of three states not_moving, stance (on the ground propelling the robot)
