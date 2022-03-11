@@ -55,7 +55,6 @@ void GaitPlanning::stanceMovementUpdate()
 {
     leg_position.x -= body_velocity.x; // TODO delta time may be very small
     leg_position.y -= body_velocity.y;
-    leg_position.z = 0;
 
     if(legOutsideEnvelope() && !neighbourIsLifted()) { //TODO there are other conditions to change state e.g Neighbour lifted
         calculateSwingParameters();
@@ -63,6 +62,7 @@ void GaitPlanning::stanceMovementUpdate()
         *lifted = true;
     }
 }
+
 
 /**
  * @brief Calculates the 3D position to swing to
@@ -133,12 +133,29 @@ void GaitPlanning::setBodyVelocity()
     body_velocity.x = receiver->getChannel(AIL) * MAX_BODY_VELOCTY / 1000.0; // TODO converting integerround off error?
     body_velocity.y = receiver->getChannel(ELE) * MAX_BODY_VELOCTY / 1000.0;
     body_velocity.z = receiver->getChannel(RUD) * MAX_BODY_VELOCTY / 1000.0; // Yaw
+    
     #ifdef REVERSE_VELOCITY_X
     body_velocity.x *= -1;
     #endif
+
     #ifdef REVERSE_VELOCITY_Y
     body_velocity.y *= -1;
     #endif
+
+    #ifdef REVERSE_YAW
+    body_velocity.z *= -1;
+    #endif
+}
+
+/**
+ * @brief Calculates the XY velocities necessary to achive yaw gait (rotating on the spot)
+ *  // TODO find a good way to calculate phi, it is calculated in InverseKinematics.cpp
+ */
+void GaitPlanning::calcYawVelocity()
+{
+    double theta = legMountingPosition.leg_mount_angle; // Angle the leg mounting possition makes with the body
+    double phi = atan2(position.y,position.x); // Angle the leg makes with the mounting position
+
 }
 
 /**

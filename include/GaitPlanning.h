@@ -8,6 +8,7 @@
 // Reverse the direction of movement of the robot
 #define REVERSE_VELOCITY_X
 //#define REVERSE_VELOCITY_Y
+//#define REVERSE_YAW
 
 #define HYSTERESIS_ENVELOPE_RADIUS 3 // TODO Set this to avoid leg from swinging as soon as it lands
 
@@ -63,6 +64,7 @@ class GaitPlanning {
         void calculateSwingParameters();
 
         void setBodyVelocity();
+        void calcYawVelocity();
         bool neighbourIsLifted();
 
         void stanceMovementUpdate();
